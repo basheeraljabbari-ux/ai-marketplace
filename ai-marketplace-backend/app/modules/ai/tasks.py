@@ -36,8 +36,20 @@ def run_ai_generation_job(listing_id: str, image_urls: list[str], condition: str
 
 async def _run_ai_generation_job_async(listing_id: str, image_urls: list[str], condition: str) -> dict:
     from app.core.database import AsyncSessionLocal
-    from app.modules.listings.models import Listing, ListingAIMetadata
     from sqlalchemy import select
+
+    # نستورد كل الـ models قبل أي عملية DB — نفس مبدأ app/main.py و alembic/env.py
+    # و tests/conftest.py. الفرق هنا إن الـ RQ worker عملية (process) منفصلة تماماً
+    # عن FastAPI، فاستيرادات main.py ما توصله أبداً؛ وبدونها SQLAlchemy يفشل بحل
+    # ForeignKey زي listings.seller_id -> users.id لأن كلاس User أصلاً غير محمّل
+    # بالـ registry حق هذي العملية.
+    from app.modules.geo.models import Country, City  # noqa
+    from app.modules.users.models import User  # noqa
+    from app.modules.categories.models import Category  # noqa
+    from app.modules.listings.models import Listing, ListingImage, ListingAIMetadata  # noqa
+    from app.modules.messaging.models import Conversation, Message  # noqa
+    from app.modules.favorites.models import Favorite  # noqa
+    from app.modules.admin.models import AuditLog  # noqa
 
     provider = get_ai_provider()
     result = await provider.analyze_and_generate(image_urls, condition)
