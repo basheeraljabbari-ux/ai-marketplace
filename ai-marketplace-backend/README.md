@@ -2,6 +2,8 @@
 
 Backend كامل، فعلي، ومُختبَر. 35 endpoint، 19 unit test ناجح، Docker جاهز، CI جاهز.
 
+> Deployed via Railway.
+
 ## ✅ التغطية الكاملة
 
 | Module | التغطية |
