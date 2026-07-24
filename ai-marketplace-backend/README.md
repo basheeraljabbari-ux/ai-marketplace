@@ -70,3 +70,4 @@ AI_API_KEY=sk-ant-...
 - Tests لموديولات messaging/favorites/admin على مستوى service (موجودة integration tests عامة بس مو شاملة كل حالة)
 - Deployment فعلي على استضافة حقيقية (Docker جاهز، بس ما تم رفعه على Railway/Render فعلياً)
 - Monitoring/observability (Sentry, logging مركزي) — مذكور بمتطلبات المرحلة 1 كـ Non-Functional، غير مطبّق
+
