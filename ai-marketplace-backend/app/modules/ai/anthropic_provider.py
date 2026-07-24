@@ -9,22 +9,22 @@ from app.modules.ai.interface import AIProvider, AIAnalysisResult
 
 settings = get_settings()
 
-SYSTEM_PROMPT = """أنت مساعد متخصص بتحليل صور منتجات لسوق إلكتروني (marketplace).
-مهمتك: تحلل الصور المرفوعة وترجع بيانات الإعلان بصيغة JSON فقط، بدون أي نص إضافي قبل أو بعد.
+SYSTEM_PROMPT = """You are an assistant that analyses product photos for an online marketplace.
+Your task: analyse the uploaded images and return the listing data as JSON only, with no extra text before or after it.
 
-الصيغة المطلوبة بالضبط:
+Return exactly this shape:
 {
-  "category_slug": "أقرب فئة من: electronics, cars, furniture, أو null لو مو واضح",
-  "detected_brand": "اسم الماركة أو null",
-  "detected_color": "اللون الأساسي أو null",
-  "title": "عنوان جذاب واحترافي بالعربي، أقل من 80 حرف",
-  "description": "وصف احترافي بالعربي، فقرتين تقريباً، يذكر الحالة والمواصفات الظاهرة",
-  "suggested_price_min": رقم بالدولار الأسترالي,
-  "suggested_price_max": رقم بالدولار الأسترالي,
-  "confidence": رقم بين 0 و 1 يعكس ثقتك بتحديد الفئة والماركة
+  "category_slug": "closest category from: electronics, cars, furniture, or null if unclear",
+  "detected_brand": "brand name, or null",
+  "detected_color": "primary colour, or null",
+  "title": "an appealing, professional title in English, under 80 characters",
+  "description": "a professional description in English, around two paragraphs, covering the condition and the visible specifications",
+  "suggested_price_min": number in Australian dollars,
+  "suggested_price_max": number in Australian dollars,
+  "confidence": number between 0 and 1 reflecting your confidence in the category and brand
 }
 
-كن واقعي بتقدير السعر بناءً على حالة المنتج المذكورة ونوعه الظاهر بالصور."""
+Be realistic about pricing, based on the stated condition and the product type visible in the images."""
 
 
 class AnthropicAIProvider(AIProvider):
@@ -46,7 +46,7 @@ class AnthropicAIProvider(AIProvider):
                 "role": "user",
                 "content": [
                     *image_blocks,
-                    {"type": "text", "text": f"حالة المنتج المذكورة من البائع: {condition}\n\nحلل الصور وأرجع JSON فقط."},
+                    {"type": "text", "text": f"Condition stated by the seller: {condition}\n\nAnalyse the images and return JSON only."},
                 ],
             }],
         )
@@ -58,7 +58,7 @@ class AnthropicAIProvider(AIProvider):
             category_slug=data.get("category_slug"),
             detected_brand=data.get("detected_brand"),
             detected_color=data.get("detected_color"),
-            title=data.get("title", "منتج بدون عنوان — يحتاج مراجعة"),
+            title=data.get("title", "Untitled product — needs review"),
             description=data.get("description", ""),
             suggested_price_min=data.get("suggested_price_min"),
             suggested_price_max=data.get("suggested_price_max"),
@@ -94,4 +94,4 @@ class AnthropicAIProvider(AIProvider):
             return json.loads(cleaned.strip())
         except json.JSONDecodeError:
             # فشل الـ parsing لا يوقف الطلب — نرجع مسودة تحتاج مراجعة يدوية كاملة
-            return {"title": "تعذّر التحليل التلقائي — عدّل يدوياً", "confidence": 0.0}
+            return {"title": "Automatic analysis failed — edit manually", "confidence": 0.0}

@@ -143,7 +143,7 @@ export function EditListingPage() {
             {fields.map((field) => (
               <div key={field.key} className="flex flex-col gap-1.5">
                 <label className="text-sm text-[var(--color-text-secondary)]">
-                  {field.label_ar} {field.required && <span className="text-[var(--color-danger)]">*</span>}
+                  {field.label_en || field.label_ar} {field.required && <span className="text-[var(--color-danger)]">*</span>}
                 </label>
                 {field.type === 'select' ? (
                   <select

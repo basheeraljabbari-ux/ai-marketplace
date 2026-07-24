@@ -19,6 +19,8 @@ export interface UserMe extends User {
 export interface CategoryField {
   key: string
   label_ar: string
+  /* Optional: categories seeded before label_en existed only carry label_ar. */
+  label_en?: string
   type: 'text' | 'number' | 'select'
   required?: boolean
   filterable?: boolean

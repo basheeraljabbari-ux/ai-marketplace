@@ -27,23 +27,23 @@ async def seed():
         electronics = Category(
             id=uuid.uuid4(), name_ar="إلكترونيات", name_en="Electronics", slug="electronics",
             attributes_schema={"fields": [
-                {"key": "brand", "label_ar": "الماركة", "type": "text", "required": True, "searchable": True},
-                {"key": "condition_detail", "label_ar": "تفاصيل الحالة", "type": "text", "required": False},
+                {"key": "brand", "label_ar": "الماركة", "label_en": "Brand", "type": "text", "required": True, "searchable": True},
+                {"key": "condition_detail", "label_ar": "تفاصيل الحالة", "label_en": "Condition details", "type": "text", "required": False},
             ]},
         )
         cars = Category(
             id=uuid.uuid4(), name_ar="سيارات", name_en="Cars", slug="cars",
             attributes_schema={"fields": [
-                {"key": "brand", "label_ar": "الماركة", "type": "text", "required": True, "searchable": True},
-                {"key": "year", "label_ar": "سنة الصنع", "type": "number", "required": True, "filterable": True, "min": 1990, "max": 2026},
-                {"key": "transmission", "label_ar": "ناقل الحركة", "type": "select", "options": ["اوتوماتيك", "يدوي"], "filterable": True},
-                {"key": "mileage_km", "label_ar": "الممشى (كم)", "type": "number", "required": False, "filterable": True},
+                {"key": "brand", "label_ar": "الماركة", "label_en": "Brand", "type": "text", "required": True, "searchable": True},
+                {"key": "year", "label_ar": "سنة الصنع", "label_en": "Year", "type": "number", "required": True, "filterable": True, "min": 1990, "max": 2026},
+                {"key": "transmission", "label_ar": "ناقل الحركة", "label_en": "Transmission", "type": "select", "options": ["Automatic", "Manual"], "filterable": True},
+                {"key": "mileage_km", "label_ar": "الممشى (كم)", "label_en": "Mileage (km)", "type": "number", "required": False, "filterable": True},
             ]},
         )
         furniture = Category(
             id=uuid.uuid4(), name_ar="أثاث", name_en="Furniture", slug="furniture",
             attributes_schema={"fields": [
-                {"key": "material", "label_ar": "الخامة", "type": "text", "required": False},
+                {"key": "material", "label_ar": "الخامة", "label_en": "Material", "type": "text", "required": False},
             ]},
         )
         db.add_all([electronics, cars, furniture])

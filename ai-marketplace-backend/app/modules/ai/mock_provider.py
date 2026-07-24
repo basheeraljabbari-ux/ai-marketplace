@@ -10,8 +10,8 @@ class MockAIProvider(AIProvider):
             category_slug=None,  # confidence واطئة عمداً → يفرض اختيار فئة يدوي بالـ UI
             detected_brand="Unknown",
             detected_color="Unknown",
-            title="عنوان تجريبي تم توليده — يحتاج مراجعة",
-            description="وصف تجريبي. هذا رد وهمي من MockAIProvider للتطوير.",
+            title="Sample generated title — needs review",
+            description="Sample description. This is a mock response from MockAIProvider for development.",
             suggested_price_min=50.0,
             suggested_price_max=150.0,
             confidence=0.3,
