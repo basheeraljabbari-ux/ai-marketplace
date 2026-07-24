@@ -24,12 +24,17 @@ def get_ai_provider():
         raise ValueError(f"Unknown AI_PROVIDER: {settings.AI_PROVIDER}")
 
 
-def run_ai_generation_job(job_id: str, listing_id: str, image_urls: list[str], condition: str) -> dict:
-    """Entry point اللي يناديه RQ worker (sync wrapper حول async logic)."""
-    return asyncio.run(_run_ai_generation_job_async(job_id, listing_id, image_urls, condition))
+def run_ai_generation_job(listing_id: str, image_urls: list[str], condition: str) -> dict:
+    """Entry point اللي يناديه RQ worker (sync wrapper حول async logic).
+
+    ملاحظة مهمة: لا تضيف باراميتر اسمه job_id هنا — RQ يحجز job_id ككلمة مفتاحية
+    خاصة فيه بـ queue.enqueue() (يستخدمها لتحديد ID الـ Job نفسه) وما توصل للدالة
+    أبداً، فتطلع TypeError: missing 1 required positional argument: 'job_id'.
+    """
+    return asyncio.run(_run_ai_generation_job_async(listing_id, image_urls, condition))
 
 
-async def _run_ai_generation_job_async(job_id: str, listing_id: str, image_urls: list[str], condition: str) -> dict:
+async def _run_ai_generation_job_async(listing_id: str, image_urls: list[str], condition: str) -> dict:
     from app.core.database import AsyncSessionLocal
     from app.modules.listings.models import Listing, ListingAIMetadata
     from sqlalchemy import select

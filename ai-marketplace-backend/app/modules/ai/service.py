@@ -17,9 +17,10 @@ class AIService:
     def enqueue_listing_generation(self, listing_id: uuid.UUID, image_urls: list[str], condition: str) -> str:
         from app.modules.ai.tasks import run_ai_generation_job
 
+        # بدون job_id: RQ يولّد ID تلقائياً ونرجعه من job.id. تمريره صراحةً كان
+        # يخليه ينحجز كخيار داخلي لـ RQ بدل ما يوصل للدالة كباراميتر.
         job = _queue.enqueue(
             run_ai_generation_job,
-            job_id=str(uuid.uuid4()),
             listing_id=str(listing_id),
             image_urls=image_urls,
             condition=condition,
