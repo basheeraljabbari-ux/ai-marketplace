@@ -5,6 +5,13 @@ from slowapi.errors import RateLimitExceeded
 
 from app.core.config import get_settings
 from app.core.rate_limit import limiter
+from app.modules.geo.models import Country, City  # noqa
+from app.modules.users.models import User  # noqa
+from app.modules.categories.models import Category  # noqa
+from app.modules.listings.models import Listing, ListingImage, ListingAIMetadata  # noqa
+from app.modules.messaging.models import Conversation, Message  # noqa
+from app.modules.favorites.models import Favorite  # noqa
+from app.modules.admin.models import AuditLog  # noqa
 from app.modules.admin.router import router as admin_router
 from app.modules.auth.router import router as auth_router
 from app.modules.categories.router import router as categories_router
