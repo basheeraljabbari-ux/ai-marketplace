@@ -9,7 +9,13 @@ from app.modules.listings.models import Listing, ListingImage
 
 
 class ListingRepository:
-    """طبقة وصول DB خام — بدون أي منطق عمل. الـ Service هو اللي يقرر متى/كيف تُستخدم."""
+    """طبقة وصول DB خام — بدون أي منطق عمل. الـ Service هو اللي يقرر متى/كيف تُستخدم.
+
+    كل عملية كتابة تعمل commit صراحةً: get_db ما يعمل commit، والـ session
+    يسوي rollback تلقائياً وقت الإغلاق — فبدون commit كانت كل كتابات الإعلانات
+    تضيع بصمت رغم إن الـ response يرجع نجاح. نفس أسلوب باقي الموديولات
+    (auth/favorites/messaging/admin كلها تعمل commit صراحةً).
+    """
 
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -35,10 +41,12 @@ class ListingRepository:
     async def create(self, listing: Listing) -> Listing:
         self.db.add(listing)
         await self.db.flush()
+        await self.db.commit()
         return listing
 
     async def save(self, listing: Listing) -> Listing:
         await self.db.flush()
+        await self.db.commit()
         return listing
 
     async def increment_view_count(self, listing_id: uuid.UUID) -> None:
@@ -49,9 +57,11 @@ class ListingRepository:
             .values(view_count=Listing.view_count + 1)
         )
         await self.db.execute(stmt)
+        await self.db.commit()
 
     async def add_images(self, listing_id: uuid.UUID, images: list[ListingImage]) -> None:
         for img in images:
             img.listing_id = listing_id
             self.db.add(img)
         await self.db.flush()
+        await self.db.commit()
