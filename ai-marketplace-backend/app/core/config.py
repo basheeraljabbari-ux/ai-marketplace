@@ -24,7 +24,12 @@ class Settings(BaseSettings):
 
     # Storage (S3-compatible)
     STORAGE_BUCKET: str = "ai-marketplace-images"
-    STORAGE_ENDPOINT_URL: str | None = None
+    STORAGE_ENDPOINT_URL: str | None = None  # endpoint الـ API للرفع (خاص، مو قابل للتصفح عام)
+    # الرابط العام للقراءة. R2 buckets خاصة افتراضياً و STORAGE_ENDPOINT_URL ما يخدم
+    # الملفات للعامة — لازم رابط public/custom domain منفصل، وإلا أي جهة خارجية
+    # (مثلاً Claude vision وهي تجيب الصورة) ترجع 400.
+    # صيغته بـ R2 بدون جزء الـ bucket لأنه أصلاً مربوط ببكت واحد.
+    STORAGE_PUBLIC_URL: str | None = None
     STORAGE_ACCESS_KEY: str = ""
     STORAGE_SECRET_KEY: str = ""
 

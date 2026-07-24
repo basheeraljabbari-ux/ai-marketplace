@@ -24,6 +24,8 @@ class StorageService:
             aws_secret_access_key=settings.STORAGE_SECRET_KEY,
         )
         self._bucket = settings.STORAGE_BUCKET
+        # قاعدة الروابط العامة للقراءة — منفصلة عن endpoint الرفع (راجع STORAGE_PUBLIC_URL)
+        self._public_base = (settings.STORAGE_PUBLIC_URL or "").rstrip("/")
 
     def upload_listing_image(self, file_bytes: bytes, content_type: str) -> dict:
         """يرفع 3 نسخ (original/thumbnail/optimized) ويرجع الروابط + الأبعاد الأصلية.
@@ -48,34 +50,51 @@ class StorageService:
         optimized.thumbnail(OPTIMIZED_MAX_SIZE)
         self._put(optimized_key, self._to_bytes(optimized, "WEBP", quality=85), "image/webp")
 
-        base_url = settings.STORAGE_ENDPOINT_URL or f"https://{self._bucket}.s3.amazonaws.com"
         return {
-            "original_url": f"{base_url}/{self._bucket}/{original_key}",
-            "thumbnail_url": f"{base_url}/{self._bucket}/{thumbnail_key}",
-            "optimized_url": f"{base_url}/{self._bucket}/{optimized_key}",
+            "original_url": self._public_url(original_key),
+            "thumbnail_url": self._public_url(thumbnail_key),
+            "optimized_url": self._public_url(optimized_key),
             "width": width,
             "height": height,
         }
+
+    def _public_url(self, key: str) -> str:
+        """الرابط اللي يُخزَّن بالـ DB ويُعطى للعميل/الـ AI. لو STORAGE_PUBLIC_URL
+        محدد نستخدمه مباشرة بلا جزء bucket (صيغة R2)، وإلا نرجع للصيغة القديمة
+        base/bucket/key حتى ما ينكسر أي إعداد S3 قائم."""
+        if self._public_base:
+            return f"{self._public_base}/{key}"
+        base_url = settings.STORAGE_ENDPOINT_URL or f"https://{self._bucket}.s3.amazonaws.com"
+        return f"{base_url}/{self._bucket}/{key}"
 
     def _put(self, key: str, data: bytes, content_type: str) -> None:
         self._client.put_object(Bucket=self._bucket, Key=key, Body=data, ContentType=content_type)
 
     def delete_listing_images(self, image_urls: list[str]) -> None:
-        """يحذف original/thumbnail/optimized دفعة واحدة. نستخرج الـ key من الرابط
-        بافتراض بنية base_url/bucket/key المتبعة بـ upload_listing_image."""
+        """يحذف original/thumbnail/optimized دفعة واحدة. يتعامل مع الصيغتين:
+        الجديدة (public_base/key) والقديمة (base/bucket/key) — لأن الروابط
+        المخزّنة بالـ DB قبل إضافة STORAGE_PUBLIC_URL لسه بالصيغة القديمة."""
         keys = []
         for url in image_urls:
             if not url:
                 continue
-            marker = f"{self._bucket}/"
-            if marker in url:
-                keys.append(url.split(marker, 1)[1])
+            key = self._key_from_url(url)
+            if key:
+                keys.append(key)
         if not keys:
             return
         self._client.delete_objects(
             Bucket=self._bucket,
             Delete={"Objects": [{"Key": k} for k in keys]},
         )
+
+    def _key_from_url(self, url: str) -> str | None:
+        if self._public_base and url.startswith(f"{self._public_base}/"):
+            return url[len(self._public_base) + 1:]
+        marker = f"{self._bucket}/"
+        if marker in url:
+            return url.split(marker, 1)[1]
+        return None
 
     def _to_bytes(self, image: Image.Image, fmt: str, **kwargs) -> bytes:
         buf = BytesIO()
