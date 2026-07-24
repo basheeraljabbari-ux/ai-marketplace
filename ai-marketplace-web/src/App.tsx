@@ -8,6 +8,7 @@ import { LoginPage } from '@/pages/LoginPage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { SearchPage } from '@/pages/SearchPage'
 import { ListingDetailPage } from '@/pages/ListingDetailPage'
+import { SellerProfilePage } from '@/pages/SellerProfilePage'
 import { CreateListingPage } from '@/pages/CreateListingPage'
 import { EditListingPage } from '@/pages/EditListingPage'
 import { MyListingsPage } from '@/pages/MyListingsPage'
@@ -31,6 +32,7 @@ export default function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/listing/:id" element={<ListingDetailPage />} />
+            <Route path="/seller/:id" element={<SellerProfilePage />} />
             <Route path="/create" element={<ProtectedRoute><CreateListingPage /></ProtectedRoute>} />
             <Route path="/my-listings" element={<ProtectedRoute><MyListingsPage /></ProtectedRoute>} />
             <Route path="/my-listings/:id/edit" element={<ProtectedRoute><EditListingPage /></ProtectedRoute>} />
