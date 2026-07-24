@@ -52,7 +52,7 @@ export function MessagesPage() {
         {/* Conversation list */}
         <aside className="border border-[var(--color-border)] rounded-xl overflow-y-auto">
           {conversations.length === 0 ? (
-            <div className="p-6"><EmptyState title="ما فيه محادثات" description="راسل بائع من صفحة أي منتج" /></div>
+            <div className="p-6"><EmptyState title="No conversations" description="Message a seller from any listing page" /></div>
           ) : (
             conversations.map((c) => (
               <Link
@@ -63,7 +63,7 @@ export function MessagesPage() {
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <p className="text-sm truncate">{c.last_message_preview || 'محادثة جديدة'}</p>
+                  <p className="text-sm truncate">{c.last_message_preview || 'New conversation'}</p>
                   {c.unread_count > 0 && (
                     <span className="w-5 h-5 rounded-full bg-[var(--color-accent)] text-[#0F0F0F] text-xs flex items-center justify-center shrink-0">
                       {c.unread_count}
@@ -78,12 +78,12 @@ export function MessagesPage() {
         {/* Thread */}
         <div className="border border-[var(--color-border)] rounded-xl flex flex-col">
           {!conversationId ? (
-            <div className="flex-1 flex items-center justify-center text-[var(--color-text-secondary)]">اختر محادثة</div>
+            <div className="flex-1 flex items-center justify-center text-[var(--color-text-secondary)]">Select a conversation</div>
           ) : (
             <>
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.map((m) => (
-                  <div key={m.id} className={`flex ${m.sender_id === user?.id ? 'justify-start' : 'justify-end'}`}>
+                  <div key={m.id} className={`flex ${m.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
                     <div
                       className={`max-w-[70%] rounded-2xl px-4 py-2 text-sm ${
                         m.sender_id === user?.id ? 'bg-[var(--color-accent)] text-[#0F0F0F]' : 'bg-[var(--color-surface)] text-white'
@@ -99,7 +99,7 @@ export function MessagesPage() {
                 <input
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  placeholder="اكتب رسالة..."
+                  placeholder="Type a message..."
                   className="flex-1 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                 />
                 <button type="submit" className="w-10 h-10 rounded-full bg-[var(--color-accent)] text-[#0F0F0F] flex items-center justify-center shrink-0">➤</button>

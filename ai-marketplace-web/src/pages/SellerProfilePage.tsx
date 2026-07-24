@@ -45,13 +45,13 @@ export function SellerProfilePage() {
   if (notFound || !seller) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-10">
-        <EmptyState title="البائع غير موجود" description="الرابط غير صحيح أو الحساب تم حذفه" />
+        <EmptyState title="Seller not found" description="This link is invalid or the account was deleted" />
       </div>
     )
   }
 
   const initials = seller.full_name.trim().charAt(0).toUpperCase()
-  const joinDate = new Date(seller.created_at).toLocaleDateString('ar', { year: 'numeric', month: 'long' })
+  const joinDate = new Date(seller.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
@@ -69,24 +69,24 @@ export function SellerProfilePage() {
             {seller.rating_count > 0 ? (
               <span className="flex items-center gap-1">
                 <span className="text-[var(--color-accent)]">★</span>
-                {seller.rating_avg.toFixed(1)} ({seller.rating_count} تقييم)
+                {seller.rating_avg.toFixed(1)} ({seller.rating_count} reviews)
               </span>
             ) : (
-              <span>لا توجد تقييمات بعد</span>
+              <span>No reviews yet</span>
             )}
             <span>·</span>
-            <span>عضو منذ {joinDate}</span>
+            <span>Member since {joinDate}</span>
           </div>
         </div>
       </div>
 
       <h2 className="text-lg font-bold mb-5">
-        إعلانات {seller.full_name.split(' ')[0]}
-        <span className="text-[var(--color-text-secondary)] font-normal text-sm mr-2">({listings.length})</span>
+        {seller.full_name.split(' ')[0]}'s Listings
+        <span className="text-[var(--color-text-secondary)] font-normal text-sm ml-2">({listings.length})</span>
       </h2>
 
       {listings.length === 0 ? (
-        <EmptyState title="ما عنده إعلانات نشطة حالياً" />
+        <EmptyState title="No active listings right now" />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {listings.map((listing) => <ListingCard key={listing.id} listing={listing} />)}
@@ -94,7 +94,7 @@ export function SellerProfilePage() {
       )}
 
       <div className="mt-8">
-        <Link to="/search" className="text-sm text-[var(--color-accent)] hover:underline">← رجوع للبحث</Link>
+        <Link to="/search" className="text-sm text-[var(--color-accent)] hover:underline">← Back to search</Link>
       </div>
     </div>
   )

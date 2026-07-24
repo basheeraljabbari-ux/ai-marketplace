@@ -20,7 +20,7 @@ export function LoginPage() {
       await login(email, password)
       navigate('/')
     } catch {
-      setError('البريد الإلكتروني أو كلمة المرور غير صحيحة')
+      setError('Incorrect email or password')
     } finally {
       setIsLoading(false)
     }
@@ -28,18 +28,18 @@ export function LoginPage() {
 
   return (
     <div className="max-w-sm mx-auto px-4 py-20">
-      <h1 className="text-2xl font-bold text-center mb-1">تسجيل الدخول</h1>
-      <p className="text-sm text-[var(--color-text-secondary)] text-center mb-8">أهلاً بعودتك</p>
+      <h1 className="text-2xl font-bold text-center mb-1">Log In</h1>
+      <p className="text-sm text-[var(--color-text-secondary)] text-center mb-8">Welcome back</p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <Input label="البريد الإلكتروني" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
-        <Input label="كلمة المرور" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+        <Input label="Email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+        <Input label="Password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
         {error && <p className="text-sm text-[var(--color-danger)]">{error}</p>}
-        <Button type="submit" isLoading={isLoading} className="mt-2">دخول</Button>
+        <Button type="submit" isLoading={isLoading} className="mt-2">Log In</Button>
       </form>
 
       <p className="text-sm text-[var(--color-text-secondary)] text-center mt-6">
-        ما عندك حساب؟ <Link to="/register" className="text-[var(--color-accent)] hover:underline">إنشاء حساب</Link>
+        Don't have an account? <Link to="/register" className="text-[var(--color-accent)] hover:underline">Sign up</Link>
       </p>
     </div>
   )

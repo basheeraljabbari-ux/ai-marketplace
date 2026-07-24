@@ -20,11 +20,11 @@ export function FavoritesPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">المفضلة</h1>
+      <h1 className="text-2xl font-bold mb-6">Favorites</h1>
       {isLoading ? (
-        <p className="text-[var(--color-text-secondary)]">جاري التحميل...</p>
+        <p className="text-[var(--color-text-secondary)]">Loading...</p>
       ) : listings.length === 0 ? (
-        <EmptyState title="ما فيه شي بالمفضلة" description="اضغط على قلب أي منتج تعجبك عشان تحفظه هنا" />
+        <EmptyState title="No favorites yet" description="Tap the heart on any listing you like to save it here" />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {listings.map((listing) => <ListingCard key={listing.id} listing={listing} />)}

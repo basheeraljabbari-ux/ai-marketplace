@@ -48,10 +48,10 @@ export function SearchPage() {
         {/* Filters */}
         <aside className="space-y-6">
           <div>
-            <h3 className="text-sm font-semibold mb-3 text-[var(--color-text-secondary)]">السعر</h3>
+            <h3 className="text-sm font-semibold mb-3 text-[var(--color-text-secondary)]">Price</h3>
             <div className="flex gap-2">
-              <Input placeholder="من" type="number" value={priceMin} onChange={(e) => updateFilter('price_min', e.target.value)} />
-              <Input placeholder="لين" type="number" value={priceMax} onChange={(e) => updateFilter('price_max', e.target.value)} />
+              <Input placeholder="Min" type="number" value={priceMin} onChange={(e) => updateFilter('price_min', e.target.value)} />
+              <Input placeholder="Max" type="number" value={priceMax} onChange={(e) => updateFilter('price_max', e.target.value)} />
             </div>
           </div>
         </aside>
@@ -60,8 +60,8 @@ export function SearchPage() {
         <div>
           <div className="flex items-center justify-between mb-5">
             <h1 className="text-lg font-bold">
-              {q ? `نتائج البحث عن "${q}"` : 'كل المنتجات'}
-              {!isLoading && <span className="text-[var(--color-text-secondary)] font-normal text-sm mr-2">({total})</span>}
+              {q ? `Results for "${q}"` : 'All Products'}
+              {!isLoading && <span className="text-[var(--color-text-secondary)] font-normal text-sm ml-2">({total})</span>}
             </h1>
           </div>
 
@@ -70,7 +70,7 @@ export function SearchPage() {
               {Array.from({ length: 8 }).map((_, i) => <ListingCardSkeleton key={i} />)}
             </div>
           ) : listings.length === 0 ? (
-            <EmptyState title="ما فيه نتائج" description="جرب كلمات بحث ثانية أو غيّر الفلاتر" />
+            <EmptyState title="No results found" description="Try different keywords or adjust your filters" />
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {listings.map((listing) => <ListingCard key={listing.id} listing={listing} />)}

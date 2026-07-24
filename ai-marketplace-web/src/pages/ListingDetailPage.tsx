@@ -54,7 +54,7 @@ export function ListingDetailPage() {
   }
 
   if (!listing) {
-    return <div className="max-w-5xl mx-auto px-4 py-20 text-center text-[var(--color-text-secondary)]">جاري التحميل...</div>
+    return <div className="max-w-5xl mx-auto px-4 py-20 text-center text-[var(--color-text-secondary)]">Loading...</div>
   }
 
   const images = listing.images.length ? listing.images : [null]
@@ -93,17 +93,17 @@ export function ListingDetailPage() {
         <div>
           <div className="flex items-start justify-between gap-3 mb-2">
             <h1 className="text-2xl font-bold">{listing.title}</h1>
-            <button onClick={toggleFavorite} aria-label="أضف للمفضلة" className="text-2xl shrink-0">
+            <button onClick={toggleFavorite} aria-label="Add to favorites" className="text-2xl shrink-0">
               {isFavorited ? '♥' : '♡'}
             </button>
           </div>
           <p className="text-3xl font-bold text-[var(--color-accent)] mb-4">
-            {listing.price ? `${listing.price.toLocaleString()} ${listing.currency}` : 'السعر عند التواصل'}
+            {listing.price ? `${listing.price.toLocaleString()} ${listing.currency}` : 'Contact for price'}
           </p>
 
           <div className="flex gap-2 mb-6">
             {listing.condition && <Badge>{CONDITION_LABELS[listing.condition as ListingCondition] || listing.condition}</Badge>}
-            {listing.is_ai_generated && <Badge tone="accent">✦ منشأ بالذكاء الاصطناعي</Badge>}
+            {listing.is_ai_generated && <Badge tone="accent">✦ AI Generated</Badge>}
           </div>
 
           {seller && (
@@ -121,26 +121,26 @@ export function ListingDetailPage() {
               <div className="min-w-0">
                 <p className="text-sm font-medium truncate">{seller.full_name}</p>
                 <p className="text-xs text-[var(--color-text-secondary)]">
-                  {seller.rating_count > 0 ? `★ ${seller.rating_avg.toFixed(1)} (${seller.rating_count})` : 'بائع جديد'}
+                  {seller.rating_count > 0 ? `★ ${seller.rating_avg.toFixed(1)} (${seller.rating_count})` : 'New seller'}
                 </p>
               </div>
             </Link>
           )}
 
           <Button onClick={handleContactSeller} isLoading={isStartingChat} size="lg" className="w-full mb-6">
-            مراسلة البائع
+            Message Seller
           </Button>
 
           {listing.description && (
             <div className="mb-6">
-              <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-2">الوصف</h2>
+              <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-2">Description</h2>
               <p className="text-white leading-relaxed whitespace-pre-line">{listing.description}</p>
             </div>
           )}
 
           {Object.keys(listing.attributes).length > 0 && (
             <div>
-              <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-2">المواصفات</h2>
+              <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-2">Specifications</h2>
               <dl className="grid grid-cols-2 gap-3">
                 {Object.entries(listing.attributes).map(([key, value]) => (
                   <div key={key} className="bg-[var(--color-surface)] rounded-lg px-3 py-2 border border-[var(--color-border)]">

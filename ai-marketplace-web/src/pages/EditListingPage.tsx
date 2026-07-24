@@ -18,7 +18,6 @@ export function EditListingPage() {
   const [isPublishing, setIsPublishing] = useState(false)
   const [publishError, setPublishError] = useState('')
 
-  // نسخة محلية قابلة للتعديل
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
@@ -67,7 +66,6 @@ export function EditListingPage() {
     setPublishError('')
     setIsPublishing(true)
     try {
-      // نحفظ آخر تعديلات أول، وبعدين ننشر — يضمن إن النشر يعتمد على أحدث نسخة بالفورم
       await listingsApi.update(id, {
         title, description, price: Number(price),
         category_id: categoryId || undefined,
@@ -76,21 +74,21 @@ export function EditListingPage() {
       await listingsApi.updateStatus(id, 'active')
       navigate(`/listing/${id}`)
     } catch {
-      setPublishError('تأكد إن العنوان والسعر والفئة معبّاة قبل النشر')
+      setPublishError('Make sure title, price, and category are filled in before publishing')
     } finally {
       setIsPublishing(false)
     }
   }
 
   if (isLoading || !listing) {
-    return <div className="max-w-2xl mx-auto px-4 py-20 text-center text-[var(--color-text-secondary)]">جاري التحميل...</div>
+    return <div className="max-w-2xl mx-auto px-4 py-20 text-center text-[var(--color-text-secondary)]">Loading...</div>
   }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
       <div className="flex items-center gap-2 mb-6">
-        <h1 className="text-2xl font-bold">راجع إعلانك</h1>
-        {listing.is_ai_generated && <Badge tone="accent">✦ تم التوليد بالذكاء الاصطناعي</Badge>}
+        <h1 className="text-2xl font-bold">Review Your Listing</h1>
+        {listing.is_ai_generated && <Badge tone="accent">✦ AI Generated</Badge>}
       </div>
 
       {listing.images.length > 0 && (
@@ -104,10 +102,10 @@ export function EditListingPage() {
       )}
 
       <div className="flex flex-col gap-4">
-        <Input label="العنوان" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <Input label="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm text-[var(--color-text-secondary)]">الوصف</label>
+          <label className="text-sm text-[var(--color-text-secondary)]">Description</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -117,32 +115,31 @@ export function EditListingPage() {
           />
         </div>
 
-        <Input label="السعر (AUD)" type="number" value={price} onChange={(e) => setPrice(e.target.value)} />
+        <Input label="Price (AUD)" type="number" value={price} onChange={(e) => setPrice(e.target.value)} />
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm text-[var(--color-text-secondary)]">الفئة</label>
+          <label className="text-sm text-[var(--color-text-secondary)]">Category</label>
           <select
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
             className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-4 py-2.5 text-white
               focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
           >
-            <option value="">اختر الفئة...</option>
+            <option value="">Select category...</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name_ar}</option>
+              <option key={c.id} value={c.id}>{c.name_en}</option>
             ))}
           </select>
           {!categoryId && (
             <p className="text-xs text-[var(--color-danger)]">
-              {listing.is_ai_generated ? 'الذكاء الاصطناعي ما قدر يحدد الفئة بثقة كافية — اختارها يدوياً' : 'الفئة مطلوبة للنشر'}
+              {listing.is_ai_generated ? "AI couldn't confidently determine the category — please select it manually" : 'Category is required to publish'}
             </p>
           )}
         </div>
 
-        {/* حقول ديناميكية حسب الفئة المختارة — attributes_schema */}
         {fields.length > 0 && (
           <div className="border border-[var(--color-border)] rounded-lg p-4 flex flex-col gap-3">
-            <p className="text-sm text-[var(--color-text-secondary)]">مواصفات {categories.find((c) => c.id === categoryId)?.name_ar}</p>
+            <p className="text-sm text-[var(--color-text-secondary)]">{categories.find((c) => c.id === categoryId)?.name_en} specifications</p>
             {fields.map((field) => (
               <div key={field.key} className="flex flex-col gap-1.5">
                 <label className="text-sm text-[var(--color-text-secondary)]">
@@ -154,7 +151,7 @@ export function EditListingPage() {
                     onChange={(e) => setAttributes({ ...attributes, [field.key]: e.target.value })}
                     className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-4 py-2.5 text-white"
                   >
-                    <option value="">اختر...</option>
+                    <option value="">Select...</option>
                     {field.options?.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
                 ) : (
@@ -177,10 +174,10 @@ export function EditListingPage() {
 
         <div className="flex gap-3 mt-4">
           <Button variant="secondary" onClick={handleSave} isLoading={isSaving} className="flex-1">
-            حفظ كمسودة
+            Save as Draft
           </Button>
           <Button onClick={handlePublish} isLoading={isPublishing} className="flex-1">
-            نشر الإعلان
+            Publish Listing
           </Button>
         </div>
       </div>

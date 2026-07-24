@@ -38,30 +38,30 @@ export function AdminCategoriesPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-sm font-semibold text-[var(--color-text-secondary)]">الفئات الرئيسية ({categories.length})</h2>
-        <Button size="sm" onClick={() => setIsFormOpen(!isFormOpen)}>{isFormOpen ? 'إلغاء' : '+ فئة جديدة'}</Button>
+        <h2 className="text-sm font-semibold text-[var(--color-text-secondary)]">Main Categories ({categories.length})</h2>
+        <Button size="sm" onClick={() => setIsFormOpen(!isFormOpen)}>{isFormOpen ? 'Cancel' : '+ New Category'}</Button>
       </div>
 
       {isFormOpen && (
         <form onSubmit={handleCreate} className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4">
-          <Input placeholder="الاسم بالعربي" required value={nameAr} onChange={(e) => setNameAr(e.target.value)} />
-          <Input placeholder="الاسم بالإنجليزي" required value={nameEn} onChange={(e) => setNameEn(e.target.value)} />
-          <Input placeholder="slug (مثال: furniture)" required value={slug} onChange={(e) => setSlug(e.target.value)} />
-          <Button type="submit" isLoading={isSaving} className="sm:col-span-3">حفظ</Button>
+          <Input placeholder="Name (English)" required value={nameEn} onChange={(e) => setNameEn(e.target.value)} />
+          <Input placeholder="Name (Arabic, optional)" value={nameAr} onChange={(e) => setNameAr(e.target.value)} />
+          <Input placeholder="Slug (e.g. furniture)" required value={slug} onChange={(e) => setSlug(e.target.value)} />
+          <Button type="submit" isLoading={isSaving} className="sm:col-span-3">Save</Button>
         </form>
       )}
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {categories.map((cat) => (
           <div key={cat.id} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-4 py-3">
-            <p className="font-medium">{cat.name_ar}</p>
+            <p className="font-medium">{cat.name_en}</p>
             <p className="text-xs text-[var(--color-text-secondary)]">{cat.slug}</p>
           </div>
         ))}
       </div>
 
       <p className="text-xs text-[var(--color-text-secondary)] mt-6">
-        ملاحظة: تعديل attributes_schema (حقول كل فئة) يحتاج واجهة أكثر تفصيلاً — حالياً الفئات الجديدة تُنشأ بدون حقول مخصصة، تُضاف لاحقاً عبر الـ Backend مباشرة أو توسعة هذي الشاشة.
+        Note: editing attributes_schema (fields per category) needs a more detailed interface — new categories are currently created without custom fields; add them via the Backend directly or extend this screen.
       </p>
     </div>
   )

@@ -1,10 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Cairo", "IBM Plex Sans Arabic", sans-serif;
-  --font-body: "IBM Plex Sans Arabic", "Cairo", sans-serif;
+  --font-display: "Inter", "Poppins", sans-serif;
+  --font-body: "Inter", sans-serif;
 
-  /* Design tokens — راجع وثيقة المرحلة 2 (UX/UI) قسم 4.1 */
   --color-bg: #0F0F0F;
   --color-surface: #1A1A1A;
   --color-surface-hover: #232323;
@@ -18,7 +17,7 @@
 }
 
 html {
-  direction: rtl;
+  direction: ltr;
 }
 
 body {

@@ -6,7 +6,7 @@ import { Badge } from '@/components/common/Feedback'
 import type { Listing } from '@/types'
 
 const STATUS_LABELS: Record<string, string> = {
-  draft: 'مسودة', active: 'نشط', sold: 'مباع', expired: 'منتهي', removed: 'محذوف',
+  draft: 'Draft', active: 'Active', sold: 'Sold', expired: 'Expired', removed: 'Removed',
 }
 
 export function AdminListingsPage() {
@@ -23,8 +23,8 @@ export function AdminListingsPage() {
   }, [statusFilter])
 
   async function handleRemove(listing: Listing) {
-    const reason = prompt('سبب الحذف (اختياري):') || undefined
-    if (!confirm(`متأكد تبي تحذف "${listing.title}"؟`)) return
+    const reason = prompt('Removal reason (optional):') || undefined
+    if (!confirm(`Are you sure you want to remove "${listing.title}"?`)) return
     await adminApi.removeListing(listing.id, reason)
     setListings((prev) => prev.filter((l) => l.id !== listing.id))
   }
@@ -40,13 +40,13 @@ export function AdminListingsPage() {
               statusFilter === s ? 'bg-[var(--color-accent)] text-[#0F0F0F] border-transparent' : 'border-[var(--color-border)] text-[var(--color-text-secondary)]'
             }`}
           >
-            {s ? STATUS_LABELS[s] : 'الكل'}
+            {s ? STATUS_LABELS[s] : 'All'}
           </button>
         ))}
       </div>
 
       {isLoading ? (
-        <p className="text-[var(--color-text-secondary)]">جاري التحميل...</p>
+        <p className="text-[var(--color-text-secondary)]">Loading...</p>
       ) : (
         <div className="space-y-2">
           {listings.map((listing) => (
@@ -62,11 +62,11 @@ export function AdminListingsPage() {
                 {STATUS_LABELS[listing.status]}
               </Badge>
               {listing.status !== 'removed' && (
-                <Button size="sm" variant="danger" onClick={() => handleRemove(listing)}>حذف</Button>
+                <Button size="sm" variant="danger" onClick={() => handleRemove(listing)}>Remove</Button>
               )}
             </div>
           ))}
-          {listings.length === 0 && <p className="text-sm text-[var(--color-text-secondary)]">ما فيه إعلانات بهذي الحالة</p>}
+          {listings.length === 0 && <p className="text-sm text-[var(--color-text-secondary)]">No listings with this status</p>}
         </div>
       )}
     </div>

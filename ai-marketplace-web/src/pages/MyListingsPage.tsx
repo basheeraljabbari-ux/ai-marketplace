@@ -25,7 +25,7 @@ export function MyListingsPage() {
       const updated = await listingsApi.updateStatus(id, 'active')
       setListings((prev) => prev.map((l) => (l.id === id ? updated : l)))
     } catch {
-      alert('الإعلان ناقص بيانات — أكمل الفئة والسعر قبل النشر')
+      alert('This listing is missing required info — complete category and price before publishing')
     }
   }
 
@@ -35,7 +35,7 @@ export function MyListingsPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('متأكد تبي تحذف هذا الإعلان؟')) return
+    if (!confirm('Are you sure you want to delete this listing?')) return
     await listingsApi.remove(id)
     setListings((prev) => prev.filter((l) => l.id !== id))
   }
@@ -50,16 +50,16 @@ export function MyListingsPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">إعلاناتي</h1>
-        <Link to="/create"><Button>+ إعلان جديد</Button></Link>
+        <h1 className="text-2xl font-bold">My Listings</h1>
+        <Link to="/create"><Button>+ New Listing</Button></Link>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
         {[
-          { label: 'نشطة', value: stats.active },
-          { label: 'مسودات', value: stats.draft },
-          { label: 'مباعة', value: stats.sold },
-          { label: 'إجمالي المشاهدات', value: stats.views },
+          { label: 'Active', value: stats.active },
+          { label: 'Drafts', value: stats.draft },
+          { label: 'Sold', value: stats.sold },
+          { label: 'Total Views', value: stats.views },
         ].map((s) => (
           <div key={s.label} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4">
             <p className="text-2xl font-bold text-[var(--color-accent)]">{s.value}</p>
@@ -69,12 +69,12 @@ export function MyListingsPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-[var(--color-text-secondary)]">جاري التحميل...</p>
+        <p className="text-[var(--color-text-secondary)]">Loading...</p>
       ) : listings.length === 0 ? (
         <EmptyState
-          title="ما عندك إعلانات بعد"
-          description="انشر أول إعلان لك وابدأ البيع"
-          action={<Link to="/create"><Button>إنشاء إعلان</Button></Link>}
+          title="You don't have any listings yet"
+          description="Post your first listing and start selling"
+          action={<Link to="/create"><Button>Create Listing</Button></Link>}
         />
       ) : (
         <div className="space-y-3">
@@ -87,15 +87,15 @@ export function MyListingsPage() {
                 <p className="font-medium truncate">{listing.title}</p>
                 <div className="flex items-center gap-2 mt-1">
                   <Badge tone={listing.status === 'active' ? 'success' : listing.status === 'sold' ? 'danger' : 'default'}>
-                    {{ draft: 'مسودة', active: 'نشط', sold: 'مباع', expired: 'منتهي', removed: 'محذوف' }[listing.status]}
+                    {{ draft: 'Draft', active: 'Active', sold: 'Sold', expired: 'Expired', removed: 'Removed' }[listing.status]}
                   </Badge>
-                  <span className="text-xs text-[var(--color-text-secondary)]">{listing.view_count} مشاهدة</span>
+                  <span className="text-xs text-[var(--color-text-secondary)]">{listing.view_count} views</span>
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                {listing.status === 'draft' && <Button size="sm" onClick={() => handlePublish(listing.id)}>نشر</Button>}
-                {listing.status === 'active' && <Button size="sm" variant="secondary" onClick={() => handleMarkSold(listing.id)}>تمييز كمباع</Button>}
-                <Button size="sm" variant="ghost" onClick={() => handleDelete(listing.id)}>حذف</Button>
+                {listing.status === 'draft' && <Button size="sm" onClick={() => handlePublish(listing.id)}>Publish</Button>}
+                {listing.status === 'active' && <Button size="sm" variant="secondary" onClick={() => handleMarkSold(listing.id)}>Mark as Sold</Button>}
+                <Button size="sm" variant="ghost" onClick={() => handleDelete(listing.id)}>Delete</Button>
               </div>
             </div>
           ))}

@@ -8,13 +8,13 @@ export function AdminOverviewPage() {
     adminApi.stats().then(setStats)
   }, [])
 
-  if (!stats) return <p className="text-[var(--color-text-secondary)]">جاري التحميل...</p>
+  if (!stats) return <p className="text-[var(--color-text-secondary)]">Loading...</p>
 
   const cards = [
-    { label: 'إجمالي المستخدمين', value: stats.total_users },
-    { label: 'إجمالي الإعلانات', value: stats.total_listings },
-    { label: 'إعلانات نشطة', value: stats.active_listings },
-    { label: 'إعلانات اليوم', value: stats.listings_today },
+    { label: 'Total Users', value: stats.total_users },
+    { label: 'Total Listings', value: stats.total_listings },
+    { label: 'Active Listings', value: stats.active_listings },
+    { label: "Today's Listings", value: stats.listings_today },
   ]
 
   return (
@@ -28,15 +28,15 @@ export function AdminOverviewPage() {
         ))}
       </div>
 
-      <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-3">أكثر الفئات نشاطاً</h2>
+      <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-3">Top Categories</h2>
       <div className="space-y-2">
         {stats.top_categories.map((cat) => (
           <div key={cat.name} className="flex items-center justify-between bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-4 py-3">
             <span>{cat.name}</span>
-            <span className="text-[var(--color-accent)] font-semibold">{cat.count} إعلان</span>
+            <span className="text-[var(--color-accent)] font-semibold">{cat.count} listings</span>
           </div>
         ))}
-        {stats.top_categories.length === 0 && <p className="text-sm text-[var(--color-text-secondary)]">ما فيه بيانات كافية بعد</p>}
+        {stats.top_categories.length === 0 && <p className="text-sm text-[var(--color-text-secondary)]">Not enough data yet</p>}
       </div>
     </div>
   )

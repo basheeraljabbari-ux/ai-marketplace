@@ -6,7 +6,7 @@ export const api = axios.create({
   baseURL: API_BASE_URL,
 })
 
-// إرفاق access token تلقائياً بكل طلب
+// Attach access token automatically to every request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token')
   if (token) {
@@ -15,7 +15,7 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// محاولة refresh تلقائية عند انتهاء صلاحية access token (401)
+// Automatic refresh attempt when access token expires (401)
 let isRefreshing = false
 let pendingRequests: Array<() => void> = []
 

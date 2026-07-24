@@ -18,7 +18,7 @@ export function RegisterPage() {
     setError(null)
 
     if (password.length < 8) {
-      setError('كلمة المرور لازم تكون 8 أحرف على الأقل')
+      setError('Password must be at least 8 characters')
       return
     }
 
@@ -28,9 +28,9 @@ export function RegisterPage() {
       navigate('/')
     } catch (err: any) {
       if (err?.response?.status === 409) {
-        setError('هذا البريد الإلكتروني مسجّل مسبقاً')
+        setError('This email is already registered')
       } else {
-        setError('صار خطأ، حاول مرة ثانية')
+        setError('Something went wrong, please try again')
       }
     } finally {
       setIsLoading(false)
@@ -39,19 +39,19 @@ export function RegisterPage() {
 
   return (
     <div className="max-w-sm mx-auto px-4 py-20">
-      <h1 className="text-2xl font-bold text-center mb-1">إنشاء حساب</h1>
-      <p className="text-sm text-[var(--color-text-secondary)] text-center mb-8">انضم وابدأ البيع والشراء</p>
+      <h1 className="text-2xl font-bold text-center mb-1">Join AI Marketplace</h1>
+      <p className="text-sm text-[var(--color-text-secondary)] text-center mb-8">Your next sale is one photo away</p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <Input label="الاسم الكامل" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="اسمك" />
-        <Input label="البريد الإلكتروني" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
-        <Input label="كلمة المرور" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="8 أحرف على الأقل" />
+        <Input label="Full name" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your name" />
+        <Input label="Email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+        <Input label="Password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" />
         {error && <p className="text-sm text-[var(--color-danger)]">{error}</p>}
-        <Button type="submit" isLoading={isLoading} className="mt-2">إنشاء الحساب</Button>
+        <Button type="submit" isLoading={isLoading} className="mt-2">Create Account</Button>
       </form>
 
       <p className="text-sm text-[var(--color-text-secondary)] text-center mt-6">
-        عندك حساب؟ <Link to="/login" className="text-[var(--color-accent)] hover:underline">تسجيل الدخول</Link>
+        Already have an account? <Link to="/login" className="text-[var(--color-accent)] hover:underline">Log in</Link>
       </p>
     </div>
   )

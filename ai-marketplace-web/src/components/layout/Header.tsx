@@ -26,11 +26,11 @@ export function Header() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="ابحث عن أي شي..."
-              className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-full py-2 px-4 pr-10 text-sm
+              placeholder="Search for anything..."
+              className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-full py-2 px-4 pl-10 text-sm
                 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition-colors"
             />
-            <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" aria-label="بحث">
+            <button type="submit" className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" aria-label="Search">
               ⌕
             </button>
           </div>
@@ -40,12 +40,12 @@ export function Header() {
           {user ? (
             <>
               <Link to="/create" className="hidden sm:block">
-                <Button size="sm">+ إعلان جديد</Button>
+                <Button size="sm">+ New Listing</Button>
               </Link>
-              <Link to="/messages" className="text-[var(--color-text-secondary)] hover:text-white transition-colors" aria-label="الرسائل">
+              <Link to="/messages" className="text-[var(--color-text-secondary)] hover:text-white transition-colors" aria-label="Messages">
                 ✉
               </Link>
-              <Link to="/favorites" className="text-[var(--color-text-secondary)] hover:text-white transition-colors" aria-label="المفضلة">
+              <Link to="/favorites" className="text-[var(--color-text-secondary)] hover:text-white transition-colors" aria-label="Favorites">
                 ♡
               </Link>
               <Link to="/my-listings" className="text-sm text-[var(--color-text-secondary)] hover:text-white transition-colors hidden md:block">
@@ -53,18 +53,18 @@ export function Header() {
               </Link>
               {user.role === 'admin' && (
                 <Link to="/admin" className="text-sm text-[var(--color-accent)] hover:underline hidden md:block">
-                  الإدارة
+                  Admin
                 </Link>
               )}
-              <Button variant="ghost" size="sm" onClick={logout}>خروج</Button>
+              <Button variant="ghost" size="sm" onClick={logout}>Log out</Button>
             </>
           ) : (
             <>
               <Link to="/login">
-                <Button variant="ghost" size="sm">دخول</Button>
+                <Button variant="ghost" size="sm">Log in</Button>
               </Link>
               <Link to="/register">
-                <Button size="sm">إنشاء حساب</Button>
+                <Button size="sm">Sign up</Button>
               </Link>
             </>
           )}

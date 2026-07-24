@@ -24,14 +24,14 @@ export function ListingCard({ listing }: { listing: Listing }) {
         )}
         {listing.status === 'sold' && (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <Badge tone="danger">تم البيع</Badge>
+            <Badge tone="danger">Sold</Badge>
           </div>
         )}
       </div>
       <div className="p-3">
         <h3 className="text-sm font-medium text-white truncate mb-1">{listing.title}</h3>
         <p className="text-[var(--color-accent)] font-bold">
-          {listing.price ? `${listing.price.toLocaleString()} ${listing.currency}` : 'السعر عند التواصل'}
+          {listing.price ? `${listing.price.toLocaleString()} ${listing.currency}` : 'Contact for price'}
         </p>
       </div>
     </Link>

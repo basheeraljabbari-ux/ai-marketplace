@@ -73,8 +73,8 @@ export interface AuthTokens {
 export type ListingCondition = 'new' | 'used_like_new' | 'used_good' | 'used_fair'
 
 export const CONDITION_LABELS: Record<ListingCondition, string> = {
-  new: 'جديد',
-  used_like_new: 'مستعمل كالجديد',
-  used_good: 'مستعمل بحالة جيدة',
-  used_fair: 'مستعمل بحالة مقبولة',
+  new: 'New',
+  used_like_new: 'Used - Like New',
+  used_good: 'Used - Good',
+  used_fair: 'Used - Fair',
 }
