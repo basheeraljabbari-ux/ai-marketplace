@@ -60,7 +60,9 @@ class ListingDetailOut(BaseModel):
 
     id: uuid.UUID
     seller_id: uuid.UUID
-    category_id: uuid.UUID
+    # اختياري لأن المسودة الجديدة تُنشأ بلا فئة (نفس سبب ListingCreate.category_id)؛
+    # إجباريته هنا كانت تسبب 500 عند إرجاع أي draft بلا فئة.
+    category_id: uuid.UUID | None
     city_id: uuid.UUID | None
     title: str
     description: str | None

@@ -40,6 +40,9 @@ class ListingService:
             attributes=data.attributes,
             status="draft",
         )
+        # تهيئة العلاقة يدوياً — بدونها يحاول Pydantic تحميلها lazy وقت التسلسل
+        # خارج الـ async context فيطلع MissingGreenlet. المسودة الجديدة بلا صور أصلاً.
+        listing.images = []
         await self.repo.create(listing)
         return listing
 
