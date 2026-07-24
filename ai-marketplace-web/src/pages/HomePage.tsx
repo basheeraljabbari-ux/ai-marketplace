@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { categoriesApi, listingsApi } from '@/api/endpoints'
 import { ListingCard } from '@/components/listing/ListingCard'
-import { ListingCardSkeleton } from '@/components/common/Feedback'
+import { CategoryPillSkeleton, ListingCardSkeleton } from '@/components/common/Feedback'
 import { Button } from '@/components/common/Button'
 import type { Category, Listing } from '@/types'
+
+/* Varied widths so the placeholder row reads like real category names. */
+const CATEGORY_SKELETON_WIDTHS = ['w-20', 'w-28', 'w-24', 'w-32', 'w-24', 'w-20']
 
 export function HomePage() {
   const [categories, setCategories] = useState<Category[]>([])
@@ -55,15 +58,17 @@ export function HomePage() {
           <Link to="/search" className="shrink-0 px-4 py-2 rounded-full bg-[var(--color-accent)] text-[#0F0F0F] text-sm font-semibold">
             All Categories
           </Link>
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              to={`/search?category_id=${cat.id}`}
-              className="shrink-0 px-4 py-2 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] text-sm hover:border-[var(--color-accent)]/50 transition-colors"
-            >
-              {cat.name_en}
-            </Link>
-          ))}
+          {isLoading
+            ? CATEGORY_SKELETON_WIDTHS.map((width, i) => <CategoryPillSkeleton key={i} width={width} />)
+            : categories.map((cat) => (
+                <Link
+                  key={cat.id}
+                  to={`/search?category_id=${cat.id}`}
+                  className="shrink-0 px-4 py-2 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] text-sm hover:border-[var(--color-accent)]/50 transition-colors"
+                >
+                  {cat.name_en}
+                </Link>
+              ))}
         </div>
       </section>
 

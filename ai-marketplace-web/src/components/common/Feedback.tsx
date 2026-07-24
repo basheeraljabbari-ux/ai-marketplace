@@ -39,3 +39,37 @@ export function ListingCardSkeleton() {
     </div>
   )
 }
+
+export function CategoryPillSkeleton({ width = 'w-24' }: { width?: string }) {
+  return (
+    <div
+      className={`shrink-0 h-9 ${width} rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] animate-pulse`}
+    />
+  )
+}
+
+/** Shown in place of a listing photo when the listing has no images. */
+export function ImagePlaceholder({ size = 'sm' }: { size?: 'sm' | 'lg' }) {
+  return (
+    <div className="w-full h-full relative flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-[#1C1C1C] via-[#151515] to-[#0F0F0F]">
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--color-accent) 9%, transparent), transparent 62%)',
+        }}
+        aria-hidden="true"
+      />
+      <svg
+        viewBox="0 0 48 48"
+        fill="none"
+        aria-hidden="true"
+        className={`relative text-[var(--color-accent)] ${size === 'lg' ? 'w-16 h-16' : 'w-10 h-10'}`}
+      >
+        <path d="M24 4 44 24 24 44 4 24Z" stroke="currentColor" strokeOpacity="0.35" strokeWidth="2" strokeLinejoin="round" />
+        <path d="M24 16 32 24 24 32 16 24Z" fill="currentColor" fillOpacity="0.3" />
+      </svg>
+      {size === 'lg' && <span className="relative text-xs text-[var(--color-text-secondary)]">No photo</span>}
+    </div>
+  )
+}

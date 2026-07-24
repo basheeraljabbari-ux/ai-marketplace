@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { adminApi, type AdminUser } from '@/api/endpoints'
 import { Button } from '@/components/common/Button'
 import { Badge } from '@/components/common/Feedback'
+import { useToast } from '@/components/common/Toast'
 
 export function AdminUsersPage() {
   const [users, setUsers] = useState<AdminUser[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const toast = useToast()
 
   useEffect(() => {
     adminApi.listUsers().then((data) => {
@@ -16,8 +18,13 @@ export function AdminUsersPage() {
 
   async function toggleBan(u: AdminUser) {
     const reason = u.is_banned ? undefined : prompt('Ban reason (optional):') || undefined
-    const updated = await adminApi.banUser(u.id, !u.is_banned, reason)
-    setUsers((prev) => prev.map((x) => (x.id === u.id ? updated : x)))
+    try {
+      const updated = await adminApi.banUser(u.id, !u.is_banned, reason)
+      setUsers((prev) => prev.map((x) => (x.id === u.id ? updated : x)))
+      toast.success(u.is_banned ? `${u.full_name} has been unbanned` : `${u.full_name} has been banned`)
+    } catch {
+      toast.error(`Could not ${u.is_banned ? 'unban' : 'ban'} ${u.full_name} — please try again`)
+    }
   }
 
   if (isLoading) return <p className="text-[var(--color-text-secondary)]">Loading...</p>

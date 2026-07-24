@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { listingsApi, messagingApi, favoritesApi, usersApi } from '@/api/endpoints'
 import { Button } from '@/components/common/Button'
-import { Badge } from '@/components/common/Feedback'
+import { Badge, ImagePlaceholder } from '@/components/common/Feedback'
 import { useAuth } from '@/context/AuthContext'
 import { CONDITION_LABELS, type Listing, type ListingCondition, type User } from '@/types'
 
@@ -69,7 +69,7 @@ export function ListingDetailPage() {
             {activeUrl ? (
               <img src={activeUrl} alt={listing.title} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-4xl text-[var(--color-text-secondary)]">◈</div>
+              <ImagePlaceholder size="lg" />
             )}
           </div>
           {images.length > 1 && (

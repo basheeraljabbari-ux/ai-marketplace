@@ -4,11 +4,13 @@ import { api } from '@/api/client'
 import { listingsApi } from '@/api/endpoints'
 import { EmptyState, Badge } from '@/components/common/Feedback'
 import { Button } from '@/components/common/Button'
+import { useToast } from '@/components/common/Toast'
 import { useAuth } from '@/context/AuthContext'
 import type { Listing } from '@/types'
 
 export function MyListingsPage() {
   const { user } = useAuth()
+  const toast = useToast()
   const [listings, setListings] = useState<Listing[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -24,20 +26,31 @@ export function MyListingsPage() {
     try {
       const updated = await listingsApi.updateStatus(id, 'active')
       setListings((prev) => prev.map((l) => (l.id === id ? updated : l)))
+      toast.success('Listing published')
     } catch {
-      alert('This listing is missing required info — complete category and price before publishing')
+      toast.error('This listing is missing required info — complete category and price before publishing')
     }
   }
 
   async function handleMarkSold(id: string) {
-    const updated = await listingsApi.updateStatus(id, 'sold')
-    setListings((prev) => prev.map((l) => (l.id === id ? updated : l)))
+    try {
+      const updated = await listingsApi.updateStatus(id, 'sold')
+      setListings((prev) => prev.map((l) => (l.id === id ? updated : l)))
+      toast.success('Listing marked as sold')
+    } catch {
+      toast.error('Could not mark this listing as sold — please try again')
+    }
   }
 
   async function handleDelete(id: string) {
     if (!confirm('Are you sure you want to delete this listing?')) return
-    await listingsApi.remove(id)
-    setListings((prev) => prev.filter((l) => l.id !== id))
+    try {
+      await listingsApi.remove(id)
+      setListings((prev) => prev.filter((l) => l.id !== id))
+      toast.success('Listing deleted')
+    } catch {
+      toast.error('Could not delete this listing — please try again')
+    }
   }
 
   const stats = {

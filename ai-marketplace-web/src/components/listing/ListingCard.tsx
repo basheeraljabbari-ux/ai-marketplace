@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Badge } from '@/components/common/Feedback'
+import { Badge, ImagePlaceholder } from '@/components/common/Feedback'
 import type { Listing } from '@/types'
 
 export function ListingCard({ listing }: { listing: Listing }) {
@@ -15,7 +15,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
         {cover ? (
           <img src={cover} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-[var(--color-text-secondary)] text-3xl">◈</div>
+          <ImagePlaceholder />
         )}
         {listing.is_ai_generated && (
           <span className="absolute top-2 right-2">
