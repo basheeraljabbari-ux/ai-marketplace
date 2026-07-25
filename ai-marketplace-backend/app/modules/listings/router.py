@@ -106,6 +106,21 @@ async def get_price_insight(
     return await svc.get_price_insight(category_id, condition, exclude_listing_id)
 
 
+@router.get("/mine", response_model=list[ListingDetailOut])
+async def list_my_listings(
+    current: CurrentUser = Depends(get_current_user),
+    pagination: Pagination = Depends(),
+    db: AsyncSession = Depends(get_db),
+):
+    # إعلانات المستخدم الحالي بكل الحالات (draft/active/sold/removed) مع البيانات الكاملة
+    # (صور + last_bumped_at) — مخصص لصفحة "إعلاناتي". يختلف عن /users/{id}/listings
+    # العام اللي يرجّع النشطة فقط بصيغة ListingCardOut المختصرة.
+    # لازم يكون قبل مسار /{listing_id} وإلا "mine" يُفسَّر كـ UUID ويفشل بـ 422.
+    repo = ListingRepository(db)
+    listings, _ = await repo.list_by_seller(current.id, status=None, offset=pagination.offset, limit=pagination.limit)
+    return listings
+
+
 @router.get("/{listing_id}", response_model=ListingDetailOut)
 async def get_listing(listing_id: uuid.UUID, svc: ListingService = Depends(get_listing_service)):
     listing = await svc.get_listing_or_404(listing_id)
