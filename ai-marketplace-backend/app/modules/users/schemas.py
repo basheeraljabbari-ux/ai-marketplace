@@ -14,6 +14,9 @@ class UserPublic(BaseModel):
     city_id: uuid.UUID | None
     rating_avg: float
     rating_count: int
+    # بائع موثوق: 3 مبيعات مكتملة فأكثر، مع تقييم ≥ 4.0 (أو ما عنده تقييمات بعد).
+    # محسوب في الـ router — مو عمود بالجدول.
+    is_verified_seller: bool = False
     created_at: datetime
 
 

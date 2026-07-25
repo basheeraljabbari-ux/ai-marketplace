@@ -11,7 +11,7 @@ from app.modules.listings.models import Listing, ListingImage
 from app.modules.listings.repository import ListingRepository
 from app.modules.listings.schemas import (
     ListingCreate, ListingUpdate, ListingDetailOut, ListingStatusUpdate, ListingImageOut,
-    AIGenerateRequest, AIGenerateJobOut,
+    AIGenerateRequest, AIGenerateJobOut, PriceInsightOut, BumpResultOut,
 )
 from app.modules.listings.service import ListingService
 from app.modules.search.interface import SearchFilters
@@ -95,6 +95,17 @@ async def get_ai_job_status(job_id: str, ai: AIService = Depends(AIService)):
     return AIGenerateJobOut(job_id=job_id, status=status_, listing_id=listing_id)
 
 
+@router.get("/price-insight", response_model=PriceInsightOut)
+async def get_price_insight(
+    category_id: uuid.UUID,
+    condition: str | None = None,
+    exclude_listing_id: uuid.UUID | None = None,
+    svc: ListingService = Depends(get_listing_service),
+):
+    # لازم يكون قبل مسار /{listing_id} — وإلا FastAPI يحاول يفسّر "price-insight" كـ UUID ويفشل بـ 422
+    return await svc.get_price_insight(category_id, condition, exclude_listing_id)
+
+
 @router.get("/{listing_id}", response_model=ListingDetailOut)
 async def get_listing(listing_id: uuid.UUID, svc: ListingService = Depends(get_listing_service)):
     listing = await svc.get_listing_or_404(listing_id)
@@ -127,6 +138,15 @@ async def update_listing_status(
         await svc.soft_delete(listing_id, current.id, is_admin=(current.role == "admin"))
         return await svc.get_listing_or_404(listing_id)
     raise HTTPException(400, "Unsupported status transition")
+
+
+@router.post("/{listing_id}/bump", response_model=BumpResultOut)
+async def bump_listing(
+    listing_id: uuid.UUID,
+    current: CurrentUser = Depends(get_current_user),
+    svc: ListingService = Depends(get_listing_service),
+):
+    return await svc.bump(listing_id, current.id)
 
 
 @router.delete("/{listing_id}", status_code=204)

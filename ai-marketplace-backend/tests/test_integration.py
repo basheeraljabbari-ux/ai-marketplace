@@ -106,6 +106,65 @@ async def test_create_and_publish_listing_flow(client):
 
 
 @pytest.mark.asyncio
+async def test_price_insight_empty_category_returns_zero(client):
+    # فئة بلا إعلانات نشطة → count=0 وكل الأسعار None (بدون خطأ)
+    resp = await client.get("/api/v1/listings/price-insight", params={"category_id": str(uuid.uuid4())})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["count"] == 0
+    assert body["min_price"] is None
+    assert body["avg_price"] is None
+    assert body["max_price"] is None
+
+
+@pytest.mark.asyncio
+async def test_new_user_is_not_verified_seller(client):
+    email = f"{uuid.uuid4()}@test.com"
+    reg = await client.post("/api/v1/auth/register", json={"email": email, "password": "SecurePass123", "full_name": "Fresh Seller"})
+    token = reg.json()["access_token"]
+    me = await client.get("/api/v1/users/me", headers={"Authorization": f"Bearer {token}"})
+    user_id = me.json()["id"]
+
+    resp = await client.get(f"/api/v1/users/{user_id}")
+    assert resp.status_code == 200
+    # مستخدم جديد بلا مبيعات → غير موثوق، والحقل موجود في الاستجابة
+    assert resp.json()["is_verified_seller"] is False
+
+
+@pytest.mark.asyncio
+async def test_bump_requires_auth(client):
+    resp = await client.post(f"/api/v1/listings/{uuid.uuid4()}/bump")
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_bump_nonexistent_listing_returns_404(client):
+    email = f"{uuid.uuid4()}@test.com"
+    reg = await client.post("/api/v1/auth/register", json={"email": email, "password": "SecurePass123", "full_name": "Seller"})
+    token = reg.json()["access_token"]
+
+    resp = await client.post(f"/api/v1/listings/{uuid.uuid4()}/bump", headers={"Authorization": f"Bearer {token}"})
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_bump_draft_listing_rejected(client):
+    email = f"{uuid.uuid4()}@test.com"
+    reg = await client.post("/api/v1/auth/register", json={"email": email, "password": "SecurePass123", "full_name": "Seller"})
+    token = reg.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    create_resp = await client.post("/api/v1/listings", json={
+        "title": "Draft Bike", "condition": "used_good", "price": 150,
+    }, headers=headers)
+    listing_id = create_resp.json()["id"]
+
+    # الإعلان لا يزال مسودة — الرفع مسموح فقط للنشط
+    bump_resp = await client.post(f"/api/v1/listings/{listing_id}/bump", headers=headers)
+    assert bump_resp.status_code == 400
+
+
+@pytest.mark.asyncio
 async def test_other_user_cannot_edit_listing(client):
     seller_email = f"{uuid.uuid4()}@test.com"
     other_email = f"{uuid.uuid4()}@test.com"

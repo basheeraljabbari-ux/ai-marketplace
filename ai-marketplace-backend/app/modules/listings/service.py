@@ -1,16 +1,17 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.listings.models import Listing
 from app.modules.listings.repository import ListingRepository
-from app.modules.listings.schemas import ListingCreate, ListingUpdate
+from app.modules.listings.schemas import BumpResultOut, ListingCreate, ListingUpdate, PriceInsightOut
 from app.modules.listings.validators import validate_attributes_against_schema
 from app.modules.search.service import SearchService
 
 LISTING_EXPIRY_DAYS = 60
+BUMP_COOLDOWN_HOURS = 48
 
 
 class ListingService:
@@ -106,6 +107,58 @@ class ListingService:
 
     async def register_view(self, listing_id: uuid.UUID) -> None:
         await self.repo.increment_view_count(listing_id)
+
+    async def get_price_insight(
+        self,
+        category_id: uuid.UUID,
+        condition: str | None = None,
+        exclude_listing_id: uuid.UUID | None = None,
+    ) -> PriceInsightOut:
+        """إحصاء سعري للإعلانات النشطة المشابهة — يستخدمه المشترى/البائع لتقدير السعر العادل."""
+        count, min_p, avg_p, max_p = await self.repo.price_aggregates(category_id, condition, exclude_listing_id)
+        return PriceInsightOut(
+            category_id=category_id,
+            condition=condition,
+            count=count,
+            min_price=min_p,
+            avg_price=round(avg_p, 2) if avg_p is not None else None,
+            max_price=max_p,
+        )
+
+    async def bump(self, listing_id: uuid.UUID, seller_id: uuid.UUID) -> BumpResultOut:
+        """رفع مجاني: يعيد نشر الإعلان لأعلى نتائج البحث (published_at = الآن).
+        مسموح مرة كل 48 ساعة — أبكر من كذا يرجّع 429."""
+        listing = await self.get_listing_or_404(listing_id)
+        self._assert_owner_or_admin(listing, seller_id, is_admin=False)
+
+        if listing.status != "active":
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Only active listings can be bumped")
+
+        now = datetime.now(timezone.utc)
+        cooldown = timedelta(hours=BUMP_COOLDOWN_HOURS)
+        if listing.last_bumped_at is not None:
+            # last_bumped_at مخزّن timezone-aware؛ نحرسه احتياطاً لو رجع naive من DB
+            last = listing.last_bumped_at
+            if last.tzinfo is None:
+                last = last.replace(tzinfo=timezone.utc)
+            next_allowed = last + cooldown
+            if now < next_allowed:
+                raise HTTPException(
+                    status.HTTP_429_TOO_MANY_REQUESTS,
+                    f"Already bumped recently — next free bump available at {next_allowed.isoformat()}",
+                )
+
+        listing.published_at = now
+        listing.last_bumped_at = now
+        await self.repo.save(listing)
+        await self.search.index_listing(listing)  # published_at تغيّر → ترتيب البحث يتغيّر
+
+        return BumpResultOut(
+            id=listing.id,
+            published_at=listing.published_at,
+            last_bumped_at=listing.last_bumped_at,
+            next_bump_at=now + cooldown,
+        )
 
     def _assert_owner_or_admin(self, listing: Listing, user_id: uuid.UUID, is_admin: bool) -> None:
         if listing.seller_id != user_id and not is_admin:

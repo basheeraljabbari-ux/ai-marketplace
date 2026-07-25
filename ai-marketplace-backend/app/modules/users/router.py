@@ -27,13 +27,25 @@ async def update_me(data: UserUpdate, user: User = Depends(get_current_user_full
     return user
 
 
+VERIFIED_SELLER_MIN_SALES = 3
+VERIFIED_SELLER_MIN_RATING = 4.0
+
+
 @router.get("/{user_id}", response_model=UserPublic)
 async def get_public_profile(user_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     user = await db.get(User, user_id)
     if not user or user.deleted_at is not None:
         from fastapi import HTTPException
         raise HTTPException(404, "User not found")
-    return user
+
+    # بائع موثوق: 3 مبيعات مكتملة فأكثر، وتقييم ≥ 4.0 — أو ما عنده أي تقييمات بعد
+    # (ما نعاقب البائع الجديد النشط بغياب التقييمات).
+    sold_count = await ListingRepository(db).count_sold_by_seller(user_id)
+    is_verified_seller = sold_count >= VERIFIED_SELLER_MIN_SALES and (
+        user.rating_count == 0 or float(user.rating_avg) >= VERIFIED_SELLER_MIN_RATING
+    )
+
+    return UserPublic.model_validate(user).model_copy(update={"is_verified_seller": is_verified_seller})
 
 
 @router.get("/{user_id}/listings", response_model=list[ListingCardOut])

@@ -52,6 +52,7 @@ class ListingCardOut(BaseModel):
     city_id: uuid.UUID | None
     status: str
     cover_image: str | None = None  # thumbnail_url لأول صورة
+    last_bumped_at: datetime | None = None  # يخلي واجهة "إعلاناتي" تعرف متى يُتاح الرفع المجاني التالي
     created_at: datetime
 
 
@@ -75,6 +76,7 @@ class ListingDetailOut(BaseModel):
     is_ai_generated: bool
     images: list[ListingImageOut]
     published_at: datetime | None
+    last_bumped_at: datetime | None
     created_at: datetime
 
 
@@ -95,3 +97,22 @@ class AIGenerateResultOut(BaseModel):
     status: str
     draft_listing: ListingDetailOut | None = None
     error: str | None = None
+
+
+class PriceInsightOut(BaseModel):
+    """إحصاء أسعار الإعلانات النشطة المشابهة — يساعد البائع يسعّر بشكل واقعي.
+    count=0 يعني ما فيه إعلانات مقارنة (بقية الحقول تكون None)."""
+    category_id: uuid.UUID
+    condition: str | None = None
+    count: int
+    min_price: float | None = None
+    avg_price: float | None = None
+    max_price: float | None = None
+
+
+class BumpResultOut(BaseModel):
+    """نتيجة رفع الإعلان المجاني — next_bump_at وقت ما يُتاح الرفع التالي (بعد 48 ساعة)."""
+    id: uuid.UUID
+    published_at: datetime | None
+    last_bumped_at: datetime | None
+    next_bump_at: datetime

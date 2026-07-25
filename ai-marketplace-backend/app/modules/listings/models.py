@@ -36,6 +36,9 @@ class Listing(Base):
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     sold_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # آخر مرة رفع فيها البائع الإعلان مجاناً لأعلى النتائج — يفرض فترة تهدئة 48 ساعة.
+    # null = ما رُفع أبداً بعد (يحق رفعه فوراً).
+    last_bumped_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
