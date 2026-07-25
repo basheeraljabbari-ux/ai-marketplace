@@ -4,7 +4,7 @@ import { listingsApi, categoriesApi } from '@/api/endpoints'
 import { Button } from '@/components/common/Button'
 import { Input } from '@/components/common/Input'
 import { Badge } from '@/components/common/Feedback'
-import type { Category, CategoryField, Listing } from '@/types'
+import type { Category, CategoryField, Listing, PriceInsight } from '@/types'
 
 export function EditListingPage() {
   const { id } = useParams<{ id: string }>()
@@ -23,6 +23,7 @@ export function EditListingPage() {
   const [price, setPrice] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [attributes, setAttributes] = useState<Record<string, string>>({})
+  const [priceInsight, setPriceInsight] = useState<PriceInsight | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -45,6 +46,27 @@ export function EditListingPage() {
     }
     categoriesApi.attributesSchema(categoryId).then((res) => setFields(res.fields))
   }, [categoryId])
+
+  // Fetch the typical price range for similar active listings whenever the category changes.
+  // We exclude this listing so the seller's own price never skews the comparison.
+  useEffect(() => {
+    if (!categoryId) {
+      setPriceInsight(null)
+      return
+    }
+    let cancelled = false
+    listingsApi
+      .priceInsight({ category_id: categoryId, condition: listing?.condition || undefined, exclude_listing_id: id })
+      .then((res) => {
+        if (!cancelled) setPriceInsight(res)
+      })
+      .catch(() => {
+        if (!cancelled) setPriceInsight(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [categoryId, id, listing?.condition])
 
   async function handleSave() {
     if (!id) return
@@ -84,6 +106,20 @@ export function EditListingPage() {
     return <div className="max-w-2xl mx-auto px-4 py-20 text-center text-[var(--color-text-secondary)]">Loading...</div>
   }
 
+  const fmt = (n: number) => n.toLocaleString()
+  const enteredPrice = Number(price)
+  const hasInsight = !!priceInsight && priceInsight.count > 0
+  // Flag prices that sit well outside the typical band — a likely mispricing or typo.
+  let priceWarning: string | null = null
+  if (hasInsight && price && !Number.isNaN(enteredPrice) && enteredPrice > 0) {
+    const { min_price, max_price } = priceInsight!
+    if (max_price != null && enteredPrice > max_price * 1.3) {
+      priceWarning = `That's well above similar listings (which top out around ${fmt(max_price)} ${listing.currency}) — it may sit unsold longer.`
+    } else if (min_price != null && enteredPrice < min_price * 0.7) {
+      priceWarning = `That's well below similar listings (which start around ${fmt(min_price)} ${listing.currency}) — double-check it isn't a typo.`
+    }
+  }
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
       <div className="flex items-center gap-2 mb-6">
@@ -116,6 +152,21 @@ export function EditListingPage() {
         </div>
 
         <Input label="Price (AUD)" type="number" value={price} onChange={(e) => setPrice(e.target.value)} />
+
+        {hasInsight && (
+          <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 -mt-1">
+            <p className="text-xs font-semibold text-[var(--color-accent)] mb-1">✦ AI Price Check</p>
+            <p className="text-sm text-[var(--color-text-secondary)]">
+              Similar listings typically go for{' '}
+              <span className="text-white font-medium">
+                {fmt(priceInsight!.min_price ?? 0)}–{fmt(priceInsight!.max_price ?? 0)} {listing.currency}
+              </span>
+              {priceInsight!.avg_price != null && <> (avg {fmt(Math.round(priceInsight!.avg_price))} {listing.currency})</>}
+              , based on {priceInsight!.count} active {priceInsight!.count === 1 ? 'listing' : 'listings'}.
+            </p>
+            {priceWarning && <p className="text-sm text-[var(--color-danger)] mt-2">{priceWarning}</p>}
+          </div>
+        )}
 
         <div className="flex flex-col gap-1.5">
           <label className="text-sm text-[var(--color-text-secondary)]">Category</label>

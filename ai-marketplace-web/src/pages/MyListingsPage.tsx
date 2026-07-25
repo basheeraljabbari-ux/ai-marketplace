@@ -8,11 +8,21 @@ import { useToast } from '@/components/common/Toast'
 import { useAuth } from '@/context/AuthContext'
 import type { Listing } from '@/types'
 
+const BUMP_COOLDOWN_MS = 48 * 60 * 60 * 1000
+
+/** When (if ever) the seller must wait until before the next free bump; null if a bump is available now. */
+function pendingBumpDate(listing: Listing): Date | null {
+  if (!listing.last_bumped_at) return null
+  const next = new Date(new Date(listing.last_bumped_at).getTime() + BUMP_COOLDOWN_MS)
+  return next.getTime() > Date.now() ? next : null
+}
+
 export function MyListingsPage() {
   const { user } = useAuth()
   const toast = useToast()
   const [listings, setListings] = useState<Listing[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [bumpingId, setBumpingId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -39,6 +49,21 @@ export function MyListingsPage() {
       toast.success('Listing marked as sold')
     } catch {
       toast.error('Could not mark this listing as sold — please try again')
+    }
+  }
+
+  async function handleBump(id: string) {
+    setBumpingId(id)
+    try {
+      const res = await listingsApi.bump(id)
+      setListings((prev) =>
+        prev.map((l) => (l.id === id ? { ...l, last_bumped_at: res.last_bumped_at, published_at: res.published_at } : l)),
+      )
+      toast.success('Listing bumped to the top of search')
+    } catch {
+      toast.error('Could not bump — each listing can be bumped for free once every 48 hours')
+    } finally {
+      setBumpingId(null)
     }
   }
 
@@ -107,6 +132,27 @@ export function MyListingsPage() {
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {listing.status === 'draft' && <Button size="sm" onClick={() => handlePublish(listing.id)}>Publish</Button>}
+                {listing.status === 'active' && (() => {
+                  const next = pendingBumpDate(listing)
+                  return next ? (
+                    <span
+                      className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap"
+                      title="A free bump is available once every 48 hours"
+                    >
+                      Next bump {next.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </span>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleBump(listing.id)}
+                      isLoading={bumpingId === listing.id}
+                      title="Move this listing back to the top of search — free, once every 48 hours"
+                    >
+                      ↑ Bump Free
+                    </Button>
+                  )
+                })()}
                 {listing.status === 'active' && <Button size="sm" variant="secondary" onClick={() => handleMarkSold(listing.id)}>Mark as Sold</Button>}
                 <Button size="sm" variant="ghost" onClick={() => handleDelete(listing.id)}>Delete</Button>
               </div>

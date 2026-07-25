@@ -1,5 +1,5 @@
 import { api } from './client'
-import type { AuthTokens, Category, CategoryField, Listing, ListingImage, User, UserMe } from '@/types'
+import type { AuthTokens, BumpResult, Category, CategoryField, Listing, ListingImage, PriceInsight, User, UserMe } from '@/types'
 
 // ---------- Auth ----------
 export const authApi = {
@@ -71,6 +71,11 @@ export const listingsApi = {
 
   aiGenerateStatus: (jobId: string) =>
     api.get<{ job_id: string; status: string; listing_id: string | null }>(`/listings/ai-generate/${jobId}/status`).then((r) => r.data),
+
+  priceInsight: (params: { category_id: string; condition?: string; exclude_listing_id?: string }) =>
+    api.get<PriceInsight>('/listings/price-insight', { params }).then((r) => r.data),
+
+  bump: (id: string) => api.post<BumpResult>(`/listings/${id}/bump`).then((r) => r.data),
 }
 
 // ---------- Favorites ----------

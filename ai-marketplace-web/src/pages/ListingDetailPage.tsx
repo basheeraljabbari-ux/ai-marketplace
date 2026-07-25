@@ -119,7 +119,18 @@ export function ListingDetailPage() {
                 )}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-medium truncate">{seller.full_name}</p>
+                <p className="text-sm font-medium truncate flex items-center gap-1">
+                  {seller.full_name}
+                  {seller.is_verified_seller && (
+                    <span
+                      title="Verified Seller — 3+ completed sales"
+                      className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[var(--color-accent)] text-[#0F0F0F] text-[10px] font-bold shrink-0"
+                      aria-label="Verified Seller"
+                    >
+                      ✓
+                    </span>
+                  )}
+                </p>
                 <p className="text-xs text-[var(--color-text-secondary)]">
                   {seller.rating_count > 0 ? `★ ${seller.rating_avg.toFixed(1)} (${seller.rating_count})` : 'New seller'}
                 </p>

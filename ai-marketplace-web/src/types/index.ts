@@ -5,6 +5,8 @@ export interface User {
   city_id: string | null
   rating_avg: number
   rating_count: number
+  /* True for sellers with 3+ completed sales and a rating >= 4.0 (or no ratings yet). */
+  is_verified_seller: boolean
   created_at: string
 }
 
@@ -63,7 +65,25 @@ export interface Listing {
   is_ai_generated: boolean
   images: ListingImage[]
   published_at: string | null
+  /* Last time the seller used a free bump; null if never. Gates the 48h bump cooldown. */
+  last_bumped_at: string | null
   created_at: string
+}
+
+export interface PriceInsight {
+  category_id: string
+  condition: string | null
+  count: number
+  min_price: number | null
+  avg_price: number | null
+  max_price: number | null
+}
+
+export interface BumpResult {
+  id: string
+  published_at: string | null
+  last_bumped_at: string | null
+  next_bump_at: string
 }
 
 export interface AuthTokens {
