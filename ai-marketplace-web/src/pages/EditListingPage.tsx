@@ -17,6 +17,7 @@ export function EditListingPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
   const [publishError, setPublishError] = useState('')
+  const [saved, setSaved] = useState(false)
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -70,6 +71,7 @@ export function EditListingPage() {
 
   async function handleSave() {
     if (!id) return
+    setSaved(false)
     setIsSaving(true)
     try {
       const updated = await listingsApi.update(id, {
@@ -78,6 +80,9 @@ export function EditListingPage() {
         attributes,
       })
       setListing(updated)
+      // Confirm in place rather than navigating away; auto-dismiss after a moment.
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2500)
     } finally {
       setIsSaving(false)
     }
@@ -222,14 +227,17 @@ export function EditListingPage() {
         )}
 
         {publishError && <p className="text-sm text-[var(--color-danger)]">{publishError}</p>}
+        {saved && <p className="text-sm text-[var(--color-success)]">✓ Changes saved</p>}
 
         <div className="flex gap-3 mt-4">
           <Button variant="secondary" onClick={handleSave} isLoading={isSaving} className="flex-1">
-            Save as Draft
+            Save Changes
           </Button>
-          <Button onClick={handlePublish} isLoading={isPublishing} className="flex-1">
-            Publish Listing
-          </Button>
+          {listing.status !== 'active' && (
+            <Button onClick={handlePublish} isLoading={isPublishing} className="flex-1">
+              Publish Listing
+            </Button>
+          )}
         </div>
       </div>
     </div>

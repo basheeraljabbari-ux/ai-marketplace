@@ -130,6 +130,11 @@ export function MyListingsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
+                {(listing.status === 'draft' || listing.status === 'active') && (
+                  <Link to={`/my-listings/${listing.id}/edit`}>
+                    <Button size="sm" variant="secondary">Edit</Button>
+                  </Link>
+                )}
                 {listing.status === 'draft' && <Button size="sm" onClick={() => handlePublish(listing.id)}>Publish</Button>}
                 {listing.status === 'active' && (() => {
                   const next = pendingBumpDate(listing)
