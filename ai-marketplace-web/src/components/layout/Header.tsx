@@ -49,6 +49,9 @@ export function Header() {
                 ♡
               </Link>
               <Link to="/my-listings" className="text-sm text-[var(--color-text-secondary)] hover:text-white transition-colors hidden md:block">
+                My Listings
+              </Link>
+              <Link to="/account" className="text-sm text-[var(--color-text-secondary)] hover:text-white transition-colors hidden md:block">
                 {user.full_name.split(' ')[0]}
               </Link>
               {user.role === 'admin' && (

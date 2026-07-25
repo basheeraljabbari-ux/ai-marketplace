@@ -16,6 +16,7 @@ import { SellerProfilePage } from '@/pages/SellerProfilePage'
 import { CreateListingPage } from '@/pages/CreateListingPage'
 import { EditListingPage } from '@/pages/EditListingPage'
 import { MyListingsPage } from '@/pages/MyListingsPage'
+import { AccountSettingsPage } from '@/pages/AccountSettingsPage'
 import { FavoritesPage } from '@/pages/FavoritesPage'
 import { MessagesPage } from '@/pages/MessagesPage'
 
@@ -44,6 +45,7 @@ export default function App() {
               <Route path="/create" element={<ProtectedRoute><CreateListingPage /></ProtectedRoute>} />
               <Route path="/my-listings" element={<ProtectedRoute><MyListingsPage /></ProtectedRoute>} />
               <Route path="/my-listings/:id/edit" element={<ProtectedRoute><EditListingPage /></ProtectedRoute>} />
+              <Route path="/account" element={<ProtectedRoute><AccountSettingsPage /></ProtectedRoute>} />
               <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
               <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
               <Route path="/messages/:conversationId" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />

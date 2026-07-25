@@ -41,6 +41,13 @@ export interface Category {
   icon_url: string | null
 }
 
+export interface City {
+  id: string
+  country_id: string
+  name_ar: string
+  name_en: string
+}
+
 export interface ListingImage {
   id: string
   thumbnail_url: string | null

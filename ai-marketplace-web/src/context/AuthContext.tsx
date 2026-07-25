@@ -7,6 +7,7 @@ interface AuthContextValue {
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, fullName: string) => Promise<void>
+  refreshUser: () => Promise<void>
   logout: () => void
 }
 
@@ -48,6 +49,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(me)
   }
 
+  // Re-pull the current user so global state (Header avatar/name) reflects profile edits
+  // immediately, without a page reload.
+  async function refreshUser() {
+    const me = await usersApi.me()
+    setUser(me)
+  }
+
   function logout() {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
@@ -55,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, refreshUser, logout }}>
       {children}
     </AuthContext.Provider>
   )

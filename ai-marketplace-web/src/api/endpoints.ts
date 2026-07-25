@@ -1,5 +1,5 @@
 import { api } from './client'
-import type { AuthTokens, BumpResult, Category, CategoryField, Listing, ListingImage, PriceInsight, User, UserMe } from '@/types'
+import type { AuthTokens, BumpResult, Category, CategoryField, City, Listing, ListingImage, PriceInsight, User, UserMe } from '@/types'
 
 // ---------- Auth ----------
 export const authApi = {
@@ -14,6 +14,15 @@ export const authApi = {
 export const usersApi = {
   me: () => api.get<UserMe>('/users/me').then((r) => r.data),
   updateMe: (data: Partial<UserMe>) => api.put<UserMe>('/users/me', data).then((r) => r.data),
+
+  uploadAvatar: (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post<UserMe>('/users/me/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then((r) => r.data)
+  },
+
   getPublic: (userId: string) => api.get<User>(`/users/${userId}`).then((r) => r.data),
   getListings: (userId: string, page = 1, limit = 20) =>
     api.get<Listing[]>(`/users/${userId}/listings`, { params: { page, limit } }).then((r) => r.data),
@@ -26,6 +35,11 @@ export const categoriesApi = {
 
   attributesSchema: (categoryId: string) =>
     api.get<{ category_id: string; fields: CategoryField[] }>(`/categories/${categoryId}/attributes-schema`).then((r) => r.data),
+}
+
+// ---------- Geo ----------
+export const geoApi = {
+  cities: () => api.get<City[]>('/cities').then((r) => r.data),
 }
 
 // ---------- Listings ----------
