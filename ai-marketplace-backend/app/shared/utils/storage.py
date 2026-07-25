@@ -2,7 +2,7 @@ import uuid
 from io import BytesIO
 
 import boto3
-from PIL import Image
+from PIL import Image, ImageOps
 
 from app.core.config import get_settings
 
@@ -10,6 +10,7 @@ settings = get_settings()
 
 THUMBNAIL_SIZE = (200, 200)
 OPTIMIZED_MAX_SIZE = (1200, 1200)
+AVATAR_SIZE = (300, 300)
 
 
 class StorageService:
@@ -57,6 +58,17 @@ class StorageService:
             "width": width,
             "height": height,
         }
+
+    def upload_avatar(self, file_bytes: bytes, content_type: str) -> str:
+        """يرفع صورة بروفايل مربّعة 300×300 ويرجع رابطها العام.
+        ImageOps.fit يقصّ من المركز لتغطية المربع كامل بدل ما يشوّه النِسَب."""
+        image = Image.open(BytesIO(file_bytes))
+        image = image.convert("RGB") if image.mode in ("RGBA", "P") else image
+        avatar = ImageOps.fit(image, AVATAR_SIZE, Image.LANCZOS)
+
+        key = f"avatars/{uuid.uuid4()}.webp"
+        self._put(key, self._to_bytes(avatar, "WEBP", quality=85), "image/webp")
+        return self._public_url(key)
 
     def _public_url(self, key: str) -> str:
         """الرابط اللي يُخزَّن بالـ DB ويُعطى للعميل/الـ AI. لو STORAGE_PUBLIC_URL

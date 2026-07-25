@@ -165,6 +165,19 @@ async def test_bump_draft_listing_rejected(client):
 
 
 @pytest.mark.asyncio
+async def test_list_cities_returns_ok(client):
+    resp = await client.get("/api/v1/cities")
+    assert resp.status_code == 200
+    assert isinstance(resp.json(), list)
+
+
+@pytest.mark.asyncio
+async def test_avatar_upload_requires_auth(client):
+    resp = await client.post("/api/v1/users/me/avatar", files={"file": ("a.png", b"x", "image/png")})
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
 async def test_other_user_cannot_edit_listing(client):
     seller_email = f"{uuid.uuid4()}@test.com"
     other_email = f"{uuid.uuid4()}@test.com"

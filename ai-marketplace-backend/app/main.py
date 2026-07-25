@@ -22,6 +22,7 @@ from app.modules.admin.router import router as admin_router
 from app.modules.auth.router import router as auth_router
 from app.modules.categories.router import router as categories_router
 from app.modules.favorites.router import router as favorites_router
+from app.modules.geo.router import router as geo_router
 from app.modules.listings.router import router as listings_router
 from app.modules.messaging.router import router as messaging_router
 from app.modules.users.router import router as users_router
@@ -49,6 +50,7 @@ API_PREFIX = "/api/v1"
 app.include_router(auth_router, prefix=API_PREFIX)
 app.include_router(users_router, prefix=API_PREFIX)
 app.include_router(categories_router, prefix=API_PREFIX)
+app.include_router(geo_router, prefix=API_PREFIX)
 app.include_router(listings_router, prefix=API_PREFIX)
 app.include_router(messaging_router, prefix=API_PREFIX)
 app.include_router(favorites_router, prefix=API_PREFIX)
