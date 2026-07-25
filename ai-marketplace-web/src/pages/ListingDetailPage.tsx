@@ -34,6 +34,10 @@ export function ListingDetailPage() {
     try {
       const conv = await messagingApi.startConversation(listing.id)
       navigate(`/messages/${conv.id}`)
+    } catch {
+      // Fallback for the edge cases the hidden button doesn't cover (e.g. messaging your own
+      // listing) so a rejected request never surfaces as an unhandled promise / blank page.
+      alert("Couldn't start this conversation. You can't message yourself, and the listing may no longer be available.")
     } finally {
       setIsStartingChat(false)
     }
@@ -138,9 +142,11 @@ export function ListingDetailPage() {
             </Link>
           )}
 
-          <Button onClick={handleContactSeller} isLoading={isStartingChat} size="lg" className="w-full mb-6">
-            Message Seller
-          </Button>
+          {user?.id !== listing.seller_id && (
+            <Button onClick={handleContactSeller} isLoading={isStartingChat} size="lg" className="w-full mb-6">
+              Message Seller
+            </Button>
+          )}
 
           {listing.description && (
             <div className="mb-6">

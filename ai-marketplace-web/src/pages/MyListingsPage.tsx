@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api } from '@/api/client'
 import { listingsApi } from '@/api/endpoints'
 import { EmptyState, Badge } from '@/components/common/Feedback'
 import { Button } from '@/components/common/Button'
@@ -26,8 +25,8 @@ export function MyListingsPage() {
 
   useEffect(() => {
     if (!user) return
-    api.get<Listing[]>(`/users/${user.id}/listings`).then((res) => {
-      setListings(res.data)
+    listingsApi.mine().then((res) => {
+      setListings(res)
       setIsLoading(false)
     })
   }, [user])

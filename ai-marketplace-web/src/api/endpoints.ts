@@ -46,6 +46,10 @@ export const listingsApi = {
 
   get: (id: string) => api.get<Listing>(`/listings/${id}`).then((r) => r.data),
 
+  // Current user's own listings across ALL statuses, with full data (images, last_bumped_at).
+  // Distinct from usersApi.getListings() which is public and active-only.
+  mine: () => api.get<Listing[]>('/listings/mine').then((r) => r.data),
+
   create: (data: Partial<Listing> & { title: string; condition: string }) =>
     api.post<Listing>('/listings', data).then((r) => r.data),
 
