@@ -25,8 +25,26 @@ def get_listing_service(db: AsyncSession = Depends(get_db)) -> ListingService:
     return ListingService(db, SearchService(db))
 
 
+# الفلاتر الثابتة اللي لها بارامترات معرّفة بتوقيع search_listings تحت.
+FIXED_SEARCH_PARAMS = frozenset({"q", "city_id", "category_id", "price_min", "price_max", "condition", "page", "limit"})
+
+
+def extract_attribute_filters(query_params) -> dict[str, str]:
+    """أي بارامتر مو ضمن الثابتة = فلتر ديناميكي على listings.attributes.
+    الفايدة إن أي حقل filterable بأي فئة (حالية أو جديدة) يشتغل كفلتر بلا تعديل هنا.
+
+    الفاضي يُتجاهل عشان "Any" بالواجهة تعني بلا فلتر، مو مطابقة نص فاضي.
+    مفصولة عن الـ endpoint عشان تنختبر بلا app ولا قاعدة بيانات."""
+    return {
+        key: value
+        for key, value in query_params.items()
+        if key not in FIXED_SEARCH_PARAMS and value
+    }
+
+
 @router.get("")
 async def search_listings(
+    request: Request,
     q: str | None = None,
     city_id: uuid.UUID | None = None,
     category_id: uuid.UUID | None = None,
@@ -36,8 +54,12 @@ async def search_listings(
     pagination: Pagination = Depends(),
     db: AsyncSession = Depends(get_db),
 ):
+    attributes = extract_attribute_filters(request.query_params)
     search = SearchService(db)
-    filters = SearchFilters(city_id=city_id, category_id=category_id, price_min=price_min, price_max=price_max, condition=condition)
+    filters = SearchFilters(
+        city_id=city_id, category_id=category_id, price_min=price_min, price_max=price_max,
+        condition=condition, attributes=attributes or None,
+    )
     result = await search.search(q, filters, pagination.page, pagination.limit)
     # ملاحظة: تحميل تفاصيل الكروت (عنوان/صورة/سعر) لهذي الـ IDs يكون بجلب مجمّع من listings
     # — محذوف هنا للاختصار، التنفيذ الكامل يستخدم repository.get_cards_by_ids(result.listing_ids)

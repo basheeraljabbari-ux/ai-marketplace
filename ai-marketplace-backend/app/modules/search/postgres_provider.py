@@ -31,6 +31,11 @@ class PostgresSearchProvider(SearchProvider):
             stmt = stmt.where(Listing.price <= filters.price_max)
         if filters.condition:
             stmt = stmt.where(Listing.condition == filters.condition)
+        for key, value in (filters.attributes or {}).items():
+            # المفتاح والقيمة الاثنين ينربطون كـ bind params — ما فيه بناء SQL نصي.
+            # astext لأن قيمة الفلتر جاية من الـ URL دايماً نص، فنحوّل المخزّن لنص
+            # عشان يتطابق حتى لو كان مخزّن بالـ JSONB كرقم (سنة الصنع مثلاً).
+            stmt = stmt.where(Listing.attributes[key].astext == value)
 
         count_stmt = select(func.count()).select_from(stmt.subquery())
         total = (await self.db.execute(count_stmt)).scalar_one()

@@ -147,6 +147,118 @@ async def test_bump_nonexistent_listing_returns_404(client):
     assert resp.status_code == 404
 
 
+# ---------- فلاتر attributes الديناميكية ----------
+# استخراج الفلاتر من الـ query params مغطّى بـ tests/test_search_filters.py.
+# هنا نتحقق من الجزء اللي يحتاج PostgreSQL فعلاً: مطابقة JSONB.
+
+VEHICLE_FIELDS = [
+    {"key": "transmission", "label_ar": "ناقل الحركة", "label_en": "Transmission", "type": "select",
+     "options": ["Automatic", "Manual"], "filterable": True},
+    {"key": "year", "label_ar": "سنة الصنع", "label_en": "Year", "type": "number",
+     "filterable": True, "min": 1990, "max": 2026},
+]
+
+
+async def _seed_category(fields: list[dict]) -> uuid.UUID:
+    """ينشئ فئة مباشرة بقاعدة البيانات — ما فيه endpoint عام لإنشاء الفئات.
+    الـ slug فريد لكل نداء عشان ما تتصادم الاختبارات على قيد الـ unique."""
+    from app.modules.categories.models import Category
+
+    engine = create_async_engine(TEST_DATABASE_URL)
+    category_id = uuid.uuid4()
+    session_maker = async_sessionmaker(engine, expire_on_commit=False)
+    async with session_maker() as session:
+        session.add(Category(
+            id=category_id, name_ar="مركبات", name_en="Vehicles",
+            slug=f"vehicles-{category_id.hex[:8]}",
+            attributes_schema={"fields": fields},
+        ))
+        await session.commit()
+    await engine.dispose()
+    return category_id
+
+
+async def _publish_listing(client, category_id: uuid.UUID, attributes: dict) -> str:
+    email = f"{uuid.uuid4()}@test.com"
+    reg = await client.post("/api/v1/auth/register", json={
+        "email": email, "password": "SecurePass123", "full_name": "Seller",
+    })
+    headers = {"Authorization": f"Bearer {reg.json()['access_token']}"}
+
+    create = await client.post("/api/v1/listings", json={
+        "title": "Test vehicle", "condition": "used_good", "price": 8000,
+        "category_id": str(category_id), "attributes": attributes,
+    }, headers=headers)
+    assert create.status_code == 201, create.text
+    listing_id = create.json()["id"]
+
+    publish = await client.patch(
+        f"/api/v1/listings/{listing_id}/status", json={"status": "active"}, headers=headers,
+    )
+    assert publish.status_code == 200, publish.text
+    return listing_id
+
+
+@pytest.mark.asyncio
+async def test_attribute_filter_matches_listing(client):
+    category_id = await _seed_category(VEHICLE_FIELDS)
+    listing_id = await _publish_listing(client, category_id, {"transmission": "Automatic", "year": 2019})
+
+    resp = await client.get("/api/v1/listings", params={"transmission": "Automatic"})
+    assert resp.status_code == 200
+    assert listing_id in resp.json()["listing_ids"]
+
+
+@pytest.mark.asyncio
+async def test_attribute_filter_excludes_non_matching_listing(client):
+    category_id = await _seed_category(VEHICLE_FIELDS)
+    listing_id = await _publish_listing(client, category_id, {"transmission": "Automatic", "year": 2019})
+
+    resp = await client.get("/api/v1/listings", params={"transmission": "Manual"})
+    assert resp.status_code == 200
+    assert listing_id not in resp.json()["listing_ids"]
+
+
+@pytest.mark.asyncio
+async def test_numeric_attribute_matches_as_text(client):
+    # القيمة تنخزن بالـ JSONB كرقم بس الفلتر يجي نص من الـ URL —
+    # astext هي اللي تخلي الاثنين يتطابقون.
+    category_id = await _seed_category(VEHICLE_FIELDS)
+    listing_id = await _publish_listing(client, category_id, {"transmission": "Manual", "year": 2019})
+
+    resp = await client.get("/api/v1/listings", params={"year": "2019"})
+    assert resp.status_code == 200
+    assert listing_id in resp.json()["listing_ids"]
+
+
+@pytest.mark.asyncio
+async def test_two_attribute_filters_are_anded(client):
+    category_id = await _seed_category(VEHICLE_FIELDS)
+    automatic = await _publish_listing(client, category_id, {"transmission": "Automatic", "year": 2019})
+    manual = await _publish_listing(client, category_id, {"transmission": "Manual", "year": 2019})
+
+    resp = await client.get("/api/v1/listings", params={"transmission": "Automatic", "year": "2019"})
+    assert resp.status_code == 200
+    ids = resp.json()["listing_ids"]
+    assert automatic in ids
+    assert manual not in ids
+
+    # نفس السنة بس ناقل حركة ما يطابق → ما يرجع ولا واحد منهم
+    neither = await client.get("/api/v1/listings", params={"transmission": "Automatic", "year": "2020"})
+    assert automatic not in neither.json()["listing_ids"]
+
+
+@pytest.mark.asyncio
+async def test_empty_attribute_value_is_not_a_filter(client):
+    # "Any" بالواجهة ترسل قيمة فاضية — لازم ترجع الإعلان مو تستبعده
+    category_id = await _seed_category(VEHICLE_FIELDS)
+    listing_id = await _publish_listing(client, category_id, {"transmission": "Automatic", "year": 2019})
+
+    resp = await client.get("/api/v1/listings", params={"transmission": ""})
+    assert resp.status_code == 200
+    assert listing_id in resp.json()["listing_ids"]
+
+
 @pytest.mark.asyncio
 async def test_bump_draft_listing_rejected(client):
     email = f"{uuid.uuid4()}@test.com"

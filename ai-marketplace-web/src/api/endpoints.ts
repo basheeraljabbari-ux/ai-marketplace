@@ -52,6 +52,10 @@ export interface SearchParams {
   condition?: string
   page?: number
   limit?: number
+  // Dynamic per-category attribute filters, keyed by the field's `key` in the
+  // category's attributesSchema. The backend treats any param outside the fixed
+  // set above as an attribute filter, so no key needs declaring here.
+  [attribute: string]: string | number | undefined
 }
 
 export const listingsApi = {

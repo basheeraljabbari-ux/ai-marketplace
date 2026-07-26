@@ -12,6 +12,10 @@ class SearchFilters:
     price_min: float | None = None
     price_max: float | None = None
     condition: str | None = None
+    # فلاتر ديناميكية على listings.attributes — المفتاح هو key من
+    # category.attributes_schema، والمطابقة بالمساواة النصية.
+    # كذا أي حقل filterable بأي فئة يشتغل كفلتر بلا كود إضافي له.
+    attributes: dict[str, str] | None = None
 
 
 @dataclass
