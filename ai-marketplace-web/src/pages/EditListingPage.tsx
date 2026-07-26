@@ -4,11 +4,13 @@ import { listingsApi, categoriesApi } from '@/api/endpoints'
 import { Button } from '@/components/common/Button'
 import { Input } from '@/components/common/Input'
 import { Badge } from '@/components/common/Feedback'
+import { useToast } from '@/components/common/Toast'
 import type { Category, CategoryField, Listing, PriceInsight } from '@/types'
 
 export function EditListingPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const toast = useToast()
 
   const [listing, setListing] = useState<Listing | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
@@ -17,7 +19,6 @@ export function EditListingPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
   const [publishError, setPublishError] = useState('')
-  const [saved, setSaved] = useState(false)
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -71,7 +72,6 @@ export function EditListingPage() {
 
   async function handleSave() {
     if (!id) return
-    setSaved(false)
     setIsSaving(true)
     try {
       const updated = await listingsApi.update(id, {
@@ -80,9 +80,10 @@ export function EditListingPage() {
         attributes,
       })
       setListing(updated)
-      // Confirm in place rather than navigating away; auto-dismiss after a moment.
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2500)
+      // Confirm without navigating away — the user usually keeps editing.
+      toast.success('Changes saved')
+    } catch {
+      toast.error('Could not save your changes — please try again')
     } finally {
       setIsSaving(false)
     }
@@ -227,7 +228,6 @@ export function EditListingPage() {
         )}
 
         {publishError && <p className="text-sm text-[var(--color-danger)]">{publishError}</p>}
-        {saved && <p className="text-sm text-[var(--color-success)]">✓ Changes saved</p>}
 
         <div className="flex gap-3 mt-4">
           <Button variant="secondary" onClick={handleSave} isLoading={isSaving} className="flex-1">

@@ -2,11 +2,13 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { usersApi, geoApi } from '@/api/endpoints'
 import { Button } from '@/components/common/Button'
 import { Input } from '@/components/common/Input'
+import { useToast } from '@/components/common/Toast'
 import { useAuth } from '@/context/AuthContext'
 import type { City } from '@/types'
 
 export function AccountSettingsPage() {
   const { user, refreshUser } = useAuth()
+  const toast = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [cities, setCities] = useState<City[]>([])
@@ -15,8 +17,6 @@ export function AccountSettingsPage() {
   const [cityId, setCityId] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [error, setError] = useState('')
 
   useEffect(() => {
     geoApi.cities().then(setCities).catch(() => setCities([]))
@@ -32,16 +32,13 @@ export function AccountSettingsPage() {
 
   async function handleSave(e: FormEvent) {
     e.preventDefault()
-    setError('')
-    setSaved(false)
     setIsSaving(true)
     try {
       await usersApi.updateMe({ full_name: fullName, phone: phone || null, city_id: cityId || null })
       await refreshUser()
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2500)
+      toast.success('Changes saved')
     } catch {
-      setError('Could not save your changes — please try again')
+      toast.error('Could not save your changes — please try again')
     } finally {
       setIsSaving(false)
     }
@@ -50,13 +47,13 @@ export function AccountSettingsPage() {
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    setError('')
     setIsUploading(true)
     try {
       await usersApi.uploadAvatar(file)
       await refreshUser()
+      toast.success('Photo updated')
     } catch {
-      setError('Could not upload photo — use a JPG, PNG, or WebP under 5MB')
+      toast.error('Could not upload photo — use a JPG, PNG, or WebP under 5MB')
     } finally {
       setIsUploading(false)
       // Clear the input so re-selecting the same file still fires onChange.
@@ -133,9 +130,6 @@ export function AccountSettingsPage() {
               text-[var(--color-text-secondary)] cursor-not-allowed"
           />
         </div>
-
-        {error && <p className="text-sm text-[var(--color-danger)]">{error}</p>}
-        {saved && <p className="text-sm text-[var(--color-success)]">✓ Changes saved</p>}
 
         <div className="mt-2">
           <Button type="submit" isLoading={isSaving}>Save Changes</Button>

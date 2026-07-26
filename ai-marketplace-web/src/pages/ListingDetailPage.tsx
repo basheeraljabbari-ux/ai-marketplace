@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { listingsApi, messagingApi, favoritesApi, usersApi } from '@/api/endpoints'
 import { Button } from '@/components/common/Button'
 import { Badge, ImagePlaceholder } from '@/components/common/Feedback'
+import { useToast } from '@/components/common/Toast'
 import { useAuth } from '@/context/AuthContext'
 import { CONDITION_LABELS, type Listing, type ListingCondition, type User } from '@/types'
 
@@ -10,6 +11,7 @@ export function ListingDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const toast = useToast()
   const [listing, setListing] = useState<Listing | null>(null)
   const [seller, setSeller] = useState<User | null>(null)
   const [activeImage, setActiveImage] = useState(0)
@@ -37,7 +39,7 @@ export function ListingDetailPage() {
     } catch {
       // Fallback for the edge cases the hidden button doesn't cover (e.g. messaging your own
       // listing) so a rejected request never surfaces as an unhandled promise / blank page.
-      alert("Couldn't start this conversation. You can't message yourself, and the listing may no longer be available.")
+      toast.error("Couldn't start this conversation. You can't message yourself, and the listing may no longer be available.")
     } finally {
       setIsStartingChat(false)
     }
