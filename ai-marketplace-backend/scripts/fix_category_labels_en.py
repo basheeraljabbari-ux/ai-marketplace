@@ -24,23 +24,11 @@ from app.modules.messaging.models import Conversation, Message  # noqa
 from app.modules.favorites.models import Favorite  # noqa
 from app.modules.admin.models import AuditLog  # noqa
 
-# التعريف الكامل المقصود — نسخة طبق الأصل من scripts/seed.py.
-# أي تعديل هناك لازم ينعكس هنا (والعكس).
-FIELDS_BY_SLUG = {
-    "electronics": [
-        {"key": "brand", "label_ar": "الماركة", "label_en": "Brand", "type": "text", "required": True, "searchable": True},
-        {"key": "condition_detail", "label_ar": "تفاصيل الحالة", "label_en": "Condition details", "type": "text", "required": False},
-    ],
-    "cars": [
-        {"key": "brand", "label_ar": "الماركة", "label_en": "Brand", "type": "text", "required": True, "searchable": True},
-        {"key": "year", "label_ar": "سنة الصنع", "label_en": "Year", "type": "number", "required": True, "filterable": True, "min": 1990, "max": 2026},
-        {"key": "transmission", "label_ar": "ناقل الحركة", "label_en": "Transmission", "type": "select", "options": ["Automatic", "Manual"], "filterable": True},
-        {"key": "mileage_km", "label_ar": "الممشى (كم)", "label_en": "Mileage (km)", "type": "number", "required": False, "filterable": True},
-    ],
-    "furniture": [
-        {"key": "material", "label_ar": "الخامة", "label_en": "Material", "type": "text", "required": False},
-    ],
-}
+# التعريف الكامل المقصود — مستورد مباشرة من scripts/seed.py بدل ما ينتسخ،
+# عشان ما ينفرط التطابق بين الاثنين.
+from scripts.seed import CATEGORIES  # noqa: E402
+
+FIELDS_BY_SLUG = {c["slug"]: c["fields"] for c in CATEGORIES}
 
 
 def _existing_fields(schema) -> list[dict]:
