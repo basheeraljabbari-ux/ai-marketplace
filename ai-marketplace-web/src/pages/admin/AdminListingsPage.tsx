@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { adminApi } from '@/api/endpoints'
 import { Button } from '@/components/common/Button'
 import { Badge } from '@/components/common/Feedback'
+import { useConfirm } from '@/context/ConfirmContext'
 import type { Listing } from '@/types'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -10,6 +11,7 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 export function AdminListingsPage() {
+  const confirm = useConfirm()
   const [listings, setListings] = useState<Listing[]>([])
   const [statusFilter, setStatusFilter] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -24,7 +26,12 @@ export function AdminListingsPage() {
 
   async function handleRemove(listing: Listing) {
     const reason = prompt('Removal reason (optional):') || undefined
-    if (!confirm(`Are you sure you want to remove "${listing.title}"?`)) return
+    const ok = await confirm({
+      message: `Are you sure you want to remove "${listing.title}"?`,
+      danger: true,
+      confirmLabel: 'Remove',
+    })
+    if (!ok) return
     await adminApi.removeListing(listing.id, reason)
     setListings((prev) => prev.filter((l) => l.id !== listing.id))
   }

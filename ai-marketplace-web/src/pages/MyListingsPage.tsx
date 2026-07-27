@@ -5,6 +5,7 @@ import { EmptyState, Badge } from '@/components/common/Feedback'
 import { Button } from '@/components/common/Button'
 import { useToast } from '@/components/common/Toast'
 import { useAuth } from '@/context/AuthContext'
+import { useConfirm } from '@/context/ConfirmContext'
 import type { Listing } from '@/types'
 
 const BUMP_COOLDOWN_MS = 48 * 60 * 60 * 1000
@@ -19,6 +20,7 @@ function pendingBumpDate(listing: Listing): Date | null {
 export function MyListingsPage() {
   const { user } = useAuth()
   const toast = useToast()
+  const confirm = useConfirm()
   const [listings, setListings] = useState<Listing[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [bumpingId, setBumpingId] = useState<string | null>(null)
@@ -67,7 +69,12 @@ export function MyListingsPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Are you sure you want to delete this listing?')) return
+    const ok = await confirm({
+      message: 'Are you sure you want to delete this listing?',
+      danger: true,
+      confirmLabel: 'Delete',
+    })
+    if (!ok) return
     try {
       await listingsApi.remove(id)
       setListings((prev) => prev.filter((l) => l.id !== id))
