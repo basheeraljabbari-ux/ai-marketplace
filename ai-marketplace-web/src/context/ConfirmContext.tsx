@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Button } from '@/components/common/Button'
 
 interface ConfirmOptions {
@@ -24,16 +24,30 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  function handle(result: boolean) {
+  const handle = useCallback((result: boolean) => {
     setState(null)
     resolveRef.current?.(result)
-  }
+  }, [])
+
+  useEffect(() => {
+    if (!state) return
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') handle(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [state, handle])
 
   return (
     <ConfirmContext.Provider value={confirmFn}>
       {children}
       {state && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+        <div
+          className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) handle(false)
+          }}
+        >
           <div className="w-full max-w-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-6 shadow-2xl">
             <h2 className="text-lg font-semibold mb-2">{state.title || 'Are you sure?'}</h2>
             <p className="text-sm text-[var(--color-text-secondary)] mb-6">{state.message}</p>
