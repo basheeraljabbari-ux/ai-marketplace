@@ -29,7 +29,7 @@ function DraftNotice() {
       <p className="text-sm text-[var(--color-accent)] font-semibold mb-1">Draft — pending legal review</p>
       <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
         These terms are a working draft and have not been reviewed by a lawyer. They do not yet constitute the
-        final agreement between you and AI Marketplace.
+        final agreement between you and Bazo.
       </p>
     </div>
   )
@@ -45,7 +45,7 @@ export function TermsPage() {
 
       <Section title="1. Accepting these terms">
         <p>
-          By creating an account or using AI Marketplace, you agree to these terms. If you do not agree, please do
+          By creating an account or using Bazo, you agree to these terms. If you do not agree, please do
           not use the service. You must be at least 18 years old to hold an account.
         </p>
       </Section>
@@ -94,7 +94,7 @@ export function TermsPage() {
 
       <Section title="6. Transactions between users">
         <p>
-          AI Marketplace is a listing and messaging platform. We are not a party to any sale. We do not process
+          Bazo is a listing and messaging platform. We are not a party to any sale. We do not process
           payments, hold funds, ship goods, verify items, or provide escrow. Price, payment method, handover, and
           any refund are arranged directly between buyer and seller.
         </p>

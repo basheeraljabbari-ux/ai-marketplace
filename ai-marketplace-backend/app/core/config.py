@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     # App
-    APP_NAME: str = "AI Marketplace API"
+    APP_NAME: str = "Bazo API"
     ENV: str = "development"
     DEBUG: bool = True
 

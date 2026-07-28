@@ -1,4 +1,4 @@
-# AI Marketplace — Frontend (كامل)
+# Bazo — Frontend (كامل)
 
 React + Vite + TypeScript + Tailwind v4. Build نظيف (102 module، صفر أخطاء)، Docker جاهز.
 

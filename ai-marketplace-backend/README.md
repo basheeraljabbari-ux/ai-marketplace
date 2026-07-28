@@ -1,4 +1,4 @@
-# AI Marketplace — Backend (كامل)
+# Bazo — Backend (كامل)
 
 Backend كامل، فعلي، ومُختبَر. 35 endpoint، 19 unit test ناجح، Docker جاهز، CI جاهز.
 

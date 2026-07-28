@@ -25,7 +25,7 @@ export function AboutPage() {
       <p className="text-[var(--color-text-secondary)] text-lg leading-relaxed mb-12">
         Most things worth selling never get listed. Not because nobody wants them, but because writing a good
         listing is tedious — a title that reads well, a description that answers the obvious questions, a price
-        that is neither insulting nor optimistic. AI Marketplace exists to remove that work.
+        that is neither insulting nor optimistic. Bazo exists to remove that work.
       </p>
 
       <section className="mb-12">

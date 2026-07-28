@@ -39,7 +39,7 @@ export function RegisterPage() {
 
   return (
     <div className="max-w-sm mx-auto px-4 py-20">
-      <h1 className="text-2xl font-bold text-center mb-1">Join AI Marketplace</h1>
+      <h1 className="text-2xl font-bold text-center mb-1">Join Bazo</h1>
       <p className="text-sm text-[var(--color-text-secondary)] text-center mb-8">Your next sale is one photo away</p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">

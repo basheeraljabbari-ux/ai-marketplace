@@ -18,7 +18,7 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-6">
         <Link to="/" className="flex items-center gap-2 shrink-0">
           <span className="text-[var(--color-accent)] text-2xl">◈</span>
-          <span className="font-[var(--font-display)] font-bold text-lg hidden sm:block">AI Marketplace</span>
+          <span className="font-[var(--font-display)] font-bold text-lg hidden sm:block">Bazo</span>
         </Link>
 
         <form onSubmit={handleSearch} className="flex-1 max-w-xl">

@@ -1,4 +1,4 @@
-# AI Marketplace — المشروع الكامل
+# Bazo — المشروع الكامل
 
 مجلدين رئيسيين:
 - `ai-marketplace-backend/` — FastAPI + PostgreSQL + Redis (35 endpoint، 19 test)

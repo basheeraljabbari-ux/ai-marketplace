@@ -22,7 +22,7 @@ export function Layout({ children }: { children: ReactNode }) {
               </Link>
             ))}
           </nav>
-          <p>AI Marketplace © 2026 — All rights reserved</p>
+          <p>Bazo © 2026 — All rights reserved</p>
         </div>
       </footer>
     </div>
