@@ -1,5 +1,5 @@
 import { api } from './client'
-import type { AuthTokens, BumpResult, Category, CategoryField, City, Listing, ListingImage, PriceInsight, User, UserMe } from '@/types'
+import type { AuthTokens, BumpResult, Category, CategoryField, CategorySuggestion, City, Listing, ListingImage, PriceInsight, User, UserMe } from '@/types'
 
 // ---------- Auth ----------
 export const authApi = {
@@ -98,6 +98,11 @@ export const listingsApi = {
     api.get<PriceInsight>('/listings/price-insight', { params }).then((r) => r.data),
 
   bump: (id: string) => api.post<BumpResult>(`/listings/${id}/bump`).then((r) => r.data),
+
+  // Owner/admin only. Empty when the AI was confident enough to assign the category
+  // itself, or when the listing predates the suggestions column.
+  categorySuggestions: (id: string) =>
+    api.get<CategorySuggestion[]>(`/listings/${id}/category-suggestions`).then((r) => r.data),
 }
 
 // ---------- Favorites ----------

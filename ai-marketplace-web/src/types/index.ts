@@ -77,6 +77,16 @@ export interface Listing {
   created_at: string
 }
 
+/* A category the AI thought likely but wasn't confident enough to auto-assign.
+   Only ever returned to the listing's owner (or an admin). */
+export interface CategorySuggestion {
+  slug: string
+  category_id: string
+  name_en: string
+  /* 0-1; rendered as a percentage on the quick-pick buttons. */
+  confidence: number
+}
+
 export interface PriceInsight {
   category_id: string
   condition: string | null

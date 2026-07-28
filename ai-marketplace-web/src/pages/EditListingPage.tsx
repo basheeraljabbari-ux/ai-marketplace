@@ -5,7 +5,7 @@ import { Button } from '@/components/common/Button'
 import { Input } from '@/components/common/Input'
 import { Badge } from '@/components/common/Feedback'
 import { useToast } from '@/components/common/Toast'
-import type { Category, CategoryField, Listing, PriceInsight } from '@/types'
+import type { Category, CategoryField, CategorySuggestion, Listing, PriceInsight } from '@/types'
 
 export function EditListingPage() {
   const { id } = useParams<{ id: string }>()
@@ -26,6 +26,7 @@ export function EditListingPage() {
   const [categoryId, setCategoryId] = useState('')
   const [attributes, setAttributes] = useState<Record<string, string>>({})
   const [priceInsight, setPriceInsight] = useState<PriceInsight | null>(null)
+  const [categorySuggestions, setCategorySuggestions] = useState<CategorySuggestion[]>([])
 
   useEffect(() => {
     if (!id) return
@@ -48,6 +49,26 @@ export function EditListingPage() {
     }
     categoriesApi.attributesSchema(categoryId).then((res) => setFields(res.fields))
   }, [categoryId])
+
+  // When the AI wasn't confident enough to assign a category itself, it leaves behind
+  // ranked candidates — offer those as one-tap picks instead of sending the seller
+  // straight to the full dropdown. Keyed off the listing as loaded, so choosing a
+  // suggestion doesn't make the others vanish mid-decision.
+  useEffect(() => {
+    if (!id || !listing?.is_ai_generated || listing.category_id) return
+    let cancelled = false
+    listingsApi
+      .categorySuggestions(id)
+      .then((res) => {
+        if (!cancelled) setCategorySuggestions(res)
+      })
+      .catch(() => {
+        if (!cancelled) setCategorySuggestions([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [id, listing?.is_ai_generated, listing?.category_id])
 
   // Fetch the typical price range for similar active listings whenever the category changes.
   // We exclude this listing so the seller's own price never skews the comparison.
@@ -176,6 +197,38 @@ export function EditListingPage() {
 
         <div className="flex flex-col gap-1.5">
           <label className="text-sm text-[var(--color-text-secondary)]">Category</label>
+
+          {categorySuggestions.length > 0 && (
+            <div className="mb-1">
+              <p className="text-xs font-semibold text-[var(--color-accent)] mb-2">
+                ✦ AI suggestions — tap one, or choose manually below
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {categorySuggestions.map((s) => {
+                  const isSelected = categoryId === s.category_id
+                  return (
+                    <button
+                      key={s.category_id}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => setCategoryId(s.category_id)}
+                      className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                        isSelected
+                          ? 'border-[var(--color-accent)] bg-[var(--color-accent)] text-white'
+                          : 'border-[var(--color-border)] bg-[var(--color-surface)] text-white hover:border-[var(--color-accent)]'
+                      }`}
+                    >
+                      {s.name_en}
+                      <span className={isSelected ? 'ml-1.5 opacity-80' : 'ml-1.5 text-[var(--color-text-secondary)]'}>
+                        {Math.round(s.confidence * 100)}%
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           <select
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
@@ -189,7 +242,11 @@ export function EditListingPage() {
           </select>
           {!categoryId && (
             <p className="text-xs text-[var(--color-danger)]">
-              {listing.is_ai_generated ? "AI couldn't confidently determine the category — please select it manually" : 'Category is required to publish'}
+              {categorySuggestions.length > 0
+                ? "AI couldn't confidently determine the category — pick one of its suggestions above, or select manually"
+                : listing.is_ai_generated
+                  ? "AI couldn't confidently determine the category — please select it manually"
+                  : 'Category is required to publish'}
             </p>
           )}
         </div>
