@@ -84,9 +84,15 @@ export function MessagesPage() {
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.map((m) => (
                   <div key={m.id} className={`flex ${m.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
+                    {/* Sent bubbles are a neutral grey, not gold: in a long thread they'd
+                        otherwise fill most of the screen and dilute the accent. The border
+                        carries the distinction from received bubbles that the fill alone
+                        no longer makes, since the two tones sit close together. */}
                     <div
-                      className={`max-w-[70%] rounded-2xl px-4 py-2 text-sm ${
-                        m.sender_id === user?.id ? 'bg-[var(--color-accent)] text-[#0F0F0F]' : 'bg-[var(--color-surface)] text-white'
+                      className={`max-w-[70%] rounded-2xl px-4 py-2 text-sm text-white ${
+                        m.sender_id === user?.id
+                          ? 'bg-[#2A2E35] border border-white/10'
+                          : 'bg-[var(--color-surface)]'
                       }`}
                     >
                       {m.content}
