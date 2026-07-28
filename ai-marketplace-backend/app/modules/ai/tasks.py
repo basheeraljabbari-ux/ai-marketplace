@@ -12,6 +12,12 @@ from app.core.config import get_settings
 
 settings = get_settings()
 
+# فوق هذي العتبة نسند الفئة تلقائياً؛ تحتها نخزّن الاقتراحات وتبقى category_id
+# فاضية عشان الواجهة تعرضها كأزرار اختيار سريع. 0.6 وسط عملي: عالي كفاية إن
+# الإسناد الخاطئ نادر، وواطي كفاية إن الحالات الواضحة ما تجبر المستخدم على
+# خطوة يدوية بلا داعي.
+CATEGORY_AUTO_ASSIGN_THRESHOLD = 0.6
+
 
 def get_ai_provider():
     if settings.AI_PROVIDER == "mock":
@@ -65,6 +71,14 @@ async def _run_ai_generation_job_async(listing_id: str, image_urls: list[str], c
         if result.suggested_price_min:
             listing.price = result.suggested_price_min  # قيمة أولية — المستخدم يعدلها بالمراجعة
 
+        resolved = await _resolve_category_suggestions(db, result.category_suggestions)
+
+        # الإسناد التلقائي فقط لما الأعلى ثقة يتجاوز العتبة.
+        top = resolved[0] if resolved else None
+        auto_assigned = bool(top and top["confidence"] >= CATEGORY_AUTO_ASSIGN_THRESHOLD)
+        if auto_assigned:
+            listing.category_id = uuid.UUID(top["category_id"])
+
         db.add(ListingAIMetadata(
             listing_id=listing.id,
             detected_brand=result.detected_brand,
@@ -73,7 +87,49 @@ async def _run_ai_generation_job_async(listing_id: str, image_urls: list[str], c
             suggested_price_max=result.suggested_price_max,
             ai_confidence=result.confidence,
             raw_ai_response=result.raw_response,
+            # نخزّنها دائماً حتى لو أُسندت الفئة تلقائياً — تفيد لمراجعة جودة النموذج،
+            # ولو غيّر المستخدم الفئة يدوياً بعدين نعرف شنو كانت البدائل.
+            category_suggestions=resolved or None,
         ))
         await db.commit()
 
-    return {"status": "done", "listing_id": listing_id}
+    # المفاتيح الإضافية آمنة: القارئ الوحيد (get_ai_job_status) يقرأ listing_id فقط.
+    # تفيد بتشخيص الـ worker لأن مخرجاته مو ظاهرة بأي مكان ثاني.
+    return {
+        "status": "done",
+        "listing_id": listing_id,
+        "category_assigned": auto_assigned,
+        "suggestions": len(resolved),
+    }
+
+
+async def _resolve_category_suggestions(db, suggestions: list[dict]) -> list[dict]:
+    """يحوّل [{"slug","confidence"}] لـ [{"slug","category_id","name_en","confidence"}].
+
+    أي slug ما يقابله صف Category حقيقي يُرمى بصمت — النموذج ممكن يرجع slug قديم
+    أو مخترع، وما نبي إسناد فئة غير موجودة ولا اقتراح ما ينضغط بالواجهة.
+    الترتيب التنازلي بالثقة محفوظ لأن العنصر الأول هو اللي تقرأه عتبة الإسناد.
+    """
+    if not suggestions:
+        return []
+
+    # استيراد محلي — نفس سبب الاستيرادات المحلية بالدالة فوق (عملية الـ worker منفصلة).
+    from sqlalchemy import select
+    from app.modules.categories.models import Category
+
+    slugs = [s["slug"] for s in suggestions]
+    rows = (await db.execute(select(Category).where(Category.slug.in_(slugs)))).scalars().all()
+    by_slug = {row.slug: row for row in rows}
+
+    resolved = []
+    for suggestion in suggestions:
+        category = by_slug.get(suggestion["slug"])
+        if not category:
+            continue
+        resolved.append({
+            "slug": category.slug,
+            "category_id": str(category.id),  # str عشان JSONB — UUID مو serializable
+            "name_en": category.name_en,
+            "confidence": suggestion["confidence"],
+        })
+    return resolved

@@ -1,17 +1,18 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Request
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.dependencies import CurrentUser, get_current_user, Pagination
 from app.core.rate_limit import limiter, AI_GENERATE_RATE_LIMIT
 from app.modules.ai.service import AIService
-from app.modules.listings.models import Listing, ListingImage
+from app.modules.listings.models import Listing, ListingImage, ListingAIMetadata
 from app.modules.listings.repository import ListingRepository
 from app.modules.listings.schemas import (
     ListingCreate, ListingUpdate, ListingDetailOut, ListingStatusUpdate, ListingImageOut,
-    AIGenerateRequest, AIGenerateJobOut, PriceInsightOut, BumpResultOut,
+    AIGenerateRequest, AIGenerateJobOut, PriceInsightOut, BumpResultOut, CategorySuggestionOut,
 )
 from app.modules.listings.service import ListingService
 from app.modules.search.interface import SearchFilters
@@ -193,6 +194,32 @@ async def delete_listing(
     svc: ListingService = Depends(get_listing_service),
 ):
     await svc.soft_delete(listing_id, current.id, is_admin=(current.role == "admin"))
+
+
+@router.get("/{listing_id}/category-suggestions", response_model=list[CategorySuggestionOut])
+async def get_category_suggestions(
+    listing_id: uuid.UUID,
+    current: CurrentUser = Depends(get_current_user),
+    svc: ListingService = Depends(get_listing_service),
+    db: AsyncSession = Depends(get_db),
+):
+    """الفئات المرشّحة اللي خزّنها الـ AI worker لما ثقته ما كفت للإسناد التلقائي.
+
+    مقصورة على المالك/الأدمن: مخرجات النموذج بيانات تشغيلية داخلية، ما تخص المشتري.
+    قائمة فاضية لو الإعلان مو AI-generated، أو انسندت فئته تلقائياً، أو اتعالج
+    قبل هجرة 0004 (الصفوف القديمة category_suggestions فيها NULL).
+    """
+    listing = await svc.get_listing_or_404(listing_id)
+    if listing.seller_id != current.id and current.role != "admin":
+        raise HTTPException(403, "Not the owner of this listing")
+
+    metadata = (await db.execute(
+        select(ListingAIMetadata).where(ListingAIMetadata.listing_id == listing_id)
+    )).scalar_one_or_none()
+
+    if not metadata or not metadata.category_suggestions:
+        return []
+    return metadata.category_suggestions
 
 
 MAX_IMAGES_PER_LISTING = 10

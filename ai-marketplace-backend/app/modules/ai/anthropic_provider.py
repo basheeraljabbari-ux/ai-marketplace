@@ -9,22 +9,81 @@ from app.modules.ai.interface import AIProvider, AIAnalysisResult
 
 settings = get_settings()
 
-SYSTEM_PROMPT = """You are an assistant that analyses product photos for an online marketplace.
+# مصدر الحقيقة الوحيد للـ slugs هنا هو scripts/seed.py. لو انضافت فئة جديدة
+# هناك لازم تنضاف هنا — النموذج ما يقدر يقترح slug ما يعرفه، وأي slug يرجعه
+# خارج هذي القائمة يُرمى بـ tasks.py لأنه ما ينربط بصف Category حقيقي.
+CATEGORY_SLUGS = [
+    "vehicles", "electronics", "home-goods", "apparel",
+    "sporting-goods", "toys-games", "musical-instruments", "pet-supplies",
+    "garden-outdoor", "hobbies", "office-supplies", "free-stuff",
+]
+
+SYSTEM_PROMPT = f"""You are an assistant that analyses product photos for an online marketplace.
 Your task: analyse the uploaded images and return the listing data as JSON only, with no extra text before or after it.
 
+The available categories are exactly these slugs:
+{', '.join(CATEGORY_SLUGS)}
+
 Return exactly this shape:
-{
-  "category_slug": "closest category from: electronics, cars, furniture, or null if unclear",
+{{
+  "category_suggestions": [
+    {{"slug": "one of the slugs listed above", "confidence": number between 0 and 1}}
+  ],
   "detected_brand": "brand name, or null",
   "detected_color": "primary colour, or null",
   "title": "an appealing, professional title in English, under 80 characters",
   "description": "a professional description in English, around two paragraphs, covering the condition and the visible specifications",
   "suggested_price_min": number in Australian dollars,
   "suggested_price_max": number in Australian dollars,
-  "confidence": number between 0 and 1 reflecting your confidence in the category and brand
-}
+  "confidence": number between 0 and 1 reflecting your overall confidence in the listing data
+}}
+
+Rules for category_suggestions:
+- Return up to 3 entries, ordered from most to least likely.
+- Use only slugs from the list above. Never invent a slug.
+- Return a single entry when the category is obvious; return 2-3 when the item plausibly
+  belongs to more than one (a chess set could be toys-games or hobbies).
+- Return an empty array if the images are too unclear to judge.
+- Confidence must reflect genuine certainty. Do not inflate it — a low score simply lets the
+  seller pick from your suggestions, which is a better outcome than a confident wrong guess.
 
 Be realistic about pricing, based on the stated condition and the product type visible in the images."""
+
+MAX_CATEGORY_SUGGESTIONS = 3
+
+
+def parse_category_suggestions(raw) -> list[dict]:
+    """يفلتر اقتراحات الفئات القادمة من النموذج لـ [{"slug", "confidence"}] موثوق.
+
+    مخرجات النموذج غير موثوقة — نرمي أي شي ما يطابق الشكل المتوقع بدل ما نمرره
+    لـ tasks.py. أي slug خارج CATEGORY_SLUGS يُرمى (النموذج أحياناً يخترع slug أو
+    يرجع اسم الفئة بدل الـ slug)، وأي confidence غير رقمي يُرمى معه لأن عتبة
+    الإسناد التلقائي تعتمد عليه مباشرة.
+
+    مفصولة عن الكلاس عشان تنختبر بلا مفتاح API ولا عميل Anthropic — نفس مبدأ
+    extract_attribute_filters بـ listings/router.py.
+    """
+    if not isinstance(raw, list):
+        return []
+
+    cleaned: list[dict] = []
+    seen: set[str] = set()
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        slug = item.get("slug")
+        if slug not in CATEGORY_SLUGS or slug in seen:
+            continue
+        try:
+            confidence = float(item.get("confidence"))
+        except (TypeError, ValueError):
+            continue
+        seen.add(slug)
+        cleaned.append({"slug": slug, "confidence": min(max(confidence, 0.0), 1.0)})
+
+    # نرتّب بأنفسنا بدل ما نثق بترتيب النموذج — الإسناد التلقائي يقرأ العنصر الأول.
+    cleaned.sort(key=lambda s: s["confidence"], reverse=True)
+    return cleaned[:MAX_CATEGORY_SUGGESTIONS]
 
 
 class AnthropicAIProvider(AIProvider):
@@ -55,7 +114,7 @@ class AnthropicAIProvider(AIProvider):
         data = self._parse_json_response(raw_text)
 
         return AIAnalysisResult(
-            category_slug=data.get("category_slug"),
+            category_suggestions=parse_category_suggestions(data.get("category_suggestions")),
             detected_brand=data.get("detected_brand"),
             detected_color=data.get("detected_color"),
             title=data.get("title", "Untitled product — needs review"),

@@ -87,6 +87,12 @@ class ListingAIMetadata(Base):
     ai_confidence: Mapped[float | None] = mapped_column(Numeric(3, 2))
     raw_ai_response: Mapped[dict | None] = mapped_column(JSONB)
 
+    # أعلى 3 فئات مرشّحة بعد ربط كل slug بصف Category حقيقي، مرتّبة تنازلياً بالثقة:
+    # [{"slug": ..., "category_id": ..., "name_en": ..., "confidence": 0.42}, ...]
+    # تنكتب فقط لما الثقة أقل من عتبة الإسناد التلقائي — الواجهة تعرضها كأزرار
+    # اختيار سريع بدل ما تفرض على المستخدم القائمة اليدوية كاملة.
+    category_suggestions: Mapped[list | None] = mapped_column(JSONB)
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     listing: Mapped["Listing"] = relationship(back_populates="ai_metadata")

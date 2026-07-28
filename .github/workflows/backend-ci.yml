@@ -56,8 +56,10 @@ jobs:
       - name: Check app loads (import + OpenAPI schema build)
         run: python -c "from app.main import app; app.openapi()"
 
+      # --ignore بدل تعداد الملفات يدوياً: التعداد اليدوي يعني إن أي ملف اختبار
+      # جديد ما ينشغّل بـ CI بصمت، وما ينلاحظ لأن النتيجة تبقى خضراء.
       - name: Run unit tests (no DB required)
-        run: pytest tests/test_security.py tests/test_pagination.py tests/test_attributes_validator.py tests/test_search_filters.py -v
+        run: pytest --ignore=tests/test_integration.py -v
 
       - name: Run integration tests
         env:

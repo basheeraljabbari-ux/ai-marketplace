@@ -110,6 +110,15 @@ class PriceInsightOut(BaseModel):
     max_price: float | None = None
 
 
+class CategorySuggestionOut(BaseModel):
+    """فئة مرشّحة من الـ AI بعد ربطها بصف Category حقيقي. تُرجع فقط لما الثقة
+    كانت أقل من عتبة الإسناد التلقائي — الواجهة تعرضها كأزرار اختيار سريع."""
+    slug: str
+    category_id: uuid.UUID
+    name_en: str
+    confidence: float
+
+
 class BumpResultOut(BaseModel):
     """نتيجة رفع الإعلان المجاني — next_bump_at وقت ما يُتاح الرفع التالي (بعد 48 ساعة)."""
     id: uuid.UUID

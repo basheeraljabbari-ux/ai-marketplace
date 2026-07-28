@@ -4,7 +4,11 @@ from dataclasses import dataclass
 
 @dataclass
 class AIAnalysisResult:
-    category_slug: str | None
+    # حتى 3 فئات مرشّحة مرتّبة تنازلياً بالثقة: [{"slug": str, "confidence": float}].
+    # استبدلت category_slug المفرد: النموذج غالباً يتردد بين فئتين قريبتين
+    # (hobbies مقابل toys-games مثلاً)، والقيمة المفردة كانت ترمي هذا التردد.
+    # قائمة فاضية = ما قدر يحدد أي فئة.
+    category_suggestions: list[dict]
     detected_brand: str | None
     detected_color: str | None
     title: str

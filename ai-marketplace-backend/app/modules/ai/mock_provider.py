@@ -7,7 +7,13 @@ class MockAIProvider(AIProvider):
 
     async def analyze_and_generate(self, image_urls: list[str], condition: str) -> AIAnalysisResult:
         return AIAnalysisResult(
-            category_slug=None,  # confidence واطئة عمداً → يفرض اختيار فئة يدوي بالـ UI
+            # ثقة كلها تحت عتبة الإسناد التلقائي (0.6) عمداً — تخلي مسار الاقتراحات
+            # بالواجهة يظهر بالتطوير المحلي بدل ما تنسند الفئة تلقائياً وما ينختبر أبداً.
+            category_suggestions=[
+                {"slug": "electronics", "confidence": 0.52},
+                {"slug": "toys-games", "confidence": 0.31},
+                {"slug": "hobbies", "confidence": 0.14},
+            ],
             detected_brand="Unknown",
             detected_color="Unknown",
             title="Sample generated title — needs review",
